@@ -1,4 +1,4 @@
-# Pulso
+# BeatTrackerJS
 
 Live beat tracker that runs **entirely in the browser**: it listens to audio,
 locks onto the tempo, shows which beat of the bar you are on and how hard it was
@@ -8,7 +8,7 @@ No backend, no WASM, no dependencies. [madmom](https://github.com/CPJKU/madmom)'
 neural model is ported to plain JavaScript and produces **exactly the same beats
 as the original**, down to float32 rounding noise.
 
-**▶ [Try it](https://pulso-web.netlify.app)** — hit "Listen to input" (microphone
+**▶ [Try it](https://beattrackerjs.netlify.app)** — hit "Listen to input" (microphone
 or system monitor) or "Tab audio" to pick up whatever is playing in another tab.
 
 ---

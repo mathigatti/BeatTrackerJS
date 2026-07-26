@@ -1,5 +1,5 @@
 {
-  "name": "pulso-web",
+  "name": "beattrackerjs",
   "version": "1.0.0",
   "private": true,
   "description": "Beat tracking de madmom corriendo entero en el browser, en JavaScript puro",
