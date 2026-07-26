@@ -3,7 +3,36 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Primary -->
     <title>BeatTrackerJS — live beat tracking in the browser</title>
+    <meta name="title" content="BeatTrackerJS — live beat tracking in the browser">
+    <meta name="description" content="madmom's neural beat tracker ported to plain JavaScript. Listens to your mic or a browser tab, locks onto the tempo, finds the meter and marks the accents — no backend, no WASM, no ONNX.">
+    <meta name="author" content="Mathias Gatti">
+    <link rel="canonical" href="https://dance.labsensacional.com/">
+    <meta name="theme-color" content="#0b1620">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dance.labsensacional.com/">
+    <meta property="og:title" content="BeatTrackerJS — live beat tracking in the browser">
+    <meta property="og:description" content="madmom's neural beat tracker ported to plain JavaScript. Listens to your mic or a browser tab, locks onto the tempo, finds the meter and marks the accents — no backend, no WASM, no ONNX.">
+    <meta property="og:image" content="https://dance.labsensacional.com/og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="A robot dancing next to a phase ring reading 124.0 BPM and a four-beat bar with the 1 lit up">
+    <meta property="og:site_name" content="BeatTrackerJS">
+
+    <!-- X (Twitter) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://dance.labsensacional.com/">
+    <meta name="twitter:title" content="BeatTrackerJS — live beat tracking in the browser">
+    <meta name="twitter:description" content="madmom's neural beat tracker ported to plain JavaScript. Listens to your mic or a browser tab, locks onto the tempo, finds the meter and marks the accents — no backend, no WASM, no ONNX.">
+    <meta name="twitter:image" content="https://dance.labsensacional.com/og.png">
+    <meta name="twitter:image:alt" content="A robot dancing next to a phase ring reading 124.0 BPM and a four-beat bar with the 1 lit up">
+
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
@@ -64,13 +93,15 @@
         <div class="dancer" id="dancer" data-beat="0" data-bar="0">
           <svg viewBox="0 0 200 250" role="img" aria-label="robot dancing to the beat">
             <g class="bot">
+              <!-- x overlaps the torso (60..140) so the arms stay attached, and the
+                   hand shares the rect's centre so the bbox pivot is the shoulder -->
               <g class="arm arm-l">
-                <rect x="34" y="96" width="16" height="60" rx="8"></rect>
-                <circle class="hand" cx="42" cy="158" r="10"></circle>
+                <rect x="46" y="96" width="16" height="62" rx="8"></rect>
+                <circle class="hand" cx="54" cy="160" r="10"></circle>
               </g>
               <g class="arm arm-r">
-                <rect x="150" y="96" width="16" height="60" rx="8"></rect>
-                <circle class="hand" cx="158" cy="158" r="10"></circle>
+                <rect x="138" y="96" width="16" height="62" rx="8"></rect>
+                <circle class="hand" cx="146" cy="160" r="10"></circle>
               </g>
               <g class="hips">
                 <g class="leg leg-l">

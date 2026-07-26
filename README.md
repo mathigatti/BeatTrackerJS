@@ -8,7 +8,7 @@ No backend, no WASM, no dependencies. [madmom](https://github.com/CPJKU/madmom)'
 neural model is ported to plain JavaScript and produces **exactly the same beats
 as the original**, down to float32 rounding noise.
 
-**▶ [Try it](https://beattrackerjs.netlify.app)** — hit "Listen to input" (microphone
+**▶ [Try it](https://dance.labsensacional.com)** — hit "Listen to input" (microphone
 or system monitor) or "Tab audio" to pick up whatever is playing in another tab.
 
 ---

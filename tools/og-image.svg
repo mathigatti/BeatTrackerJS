@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- Source for web/og.png. Rasterise with:
+       rsvg-convert -w 1200 -h 630 tools/og-image.svg -o web/og.png
+       Same palette and same robot as the page, so the card looks like the app. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#142a37"/>
+      <stop offset="100%" stop-color="#081119"/>
+    </linearGradient>
+    <linearGradient id="conf" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffb23f"/>
+      <stop offset="100%" stop-color="#66d17a"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#0b1620"/>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- phase ring, caught mid-bar -->
+  <g transform="translate(232, 315)">
+    <circle r="150" fill="none" stroke="rgba(143,163,167,0.2)" stroke-width="18"/>
+    <circle r="150" fill="none" stroke="#2dd9e5" stroke-width="18" stroke-linecap="round"
+            stroke-dasharray="942.48" stroke-dashoffset="235.62"
+            transform="rotate(-90)"/>
+    <text x="0" y="12" text-anchor="middle" fill="#e9f0ee"
+          font-family="'IBM Plex Mono','DejaVu Sans Mono',monospace"
+          font-size="76" font-weight="700">124.0</text>
+    <text x="0" y="48" text-anchor="middle" fill="#8fa3a7"
+          font-family="'IBM Plex Mono','DejaVu Sans Mono',monospace"
+          font-size="20" letter-spacing="3">BPM</text>
+  </g>
+
+  <!-- the dancing robot, mid-beat: arms swung, hips leaning -->
+  <g transform="translate(452, 175) scale(1.12)">
+    <g fill="#cfe0e4">
+      <g transform="rotate(28 54 102)">
+        <rect x="46" y="96" width="16" height="62" rx="8"/>
+        <circle cx="54" cy="160" r="10" fill="#7e969f"/>
+      </g>
+      <g transform="rotate(-64 146 102)">
+        <rect x="138" y="96" width="16" height="62" rx="8"/>
+        <circle cx="146" cy="160" r="10" fill="#7e969f"/>
+      </g>
+      <g transform="translate(-7 0) rotate(-5 100 168)">
+        <g transform="rotate(7 81 170)">
+          <rect x="72" y="168" width="18" height="58" rx="9"/>
+          <rect x="64" y="222" width="34" height="14" rx="7" fill="#7e969f"/>
+        </g>
+        <g transform="rotate(3 119 170)">
+          <rect x="110" y="168" width="18" height="58" rx="9"/>
+          <rect x="102" y="222" width="34" height="14" rx="7" fill="#7e969f"/>
+        </g>
+      </g>
+      <rect x="60" y="92" width="80" height="82" rx="18" fill="#9fb6bf"/>
+      <rect x="88" y="116" width="24" height="24" rx="6" fill="#2dd9e5"/>
+      <g transform="rotate(-4 100 88)">
+        <rect x="58" y="26" width="84" height="62" rx="18" fill="#b9ced5"/>
+        <circle cx="82" cy="56" r="9" fill="#0b1620"/>
+        <circle cx="118" cy="56" r="9" fill="#0b1620"/>
+        <rect x="97" y="4" width="6" height="22" rx="3"/>
+        <circle cx="100" cy="6" r="7" fill="#2dd9e5"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- title block -->
+  <g transform="translate(700, 240)">
+    <text x="0" y="0" fill="#e9f0ee"
+          font-family="'Inter','DejaVu Sans',sans-serif" font-size="52" font-weight="700">
+      BeatTrackerJS
+    </text>
+    <text x="0" y="48" fill="#8fa3a7"
+          font-family="'Inter','DejaVu Sans',sans-serif" font-size="24">
+      Live beat tracking in the browser
+    </text>
+    <text x="0" y="98" fill="#ffb23f"
+          font-family="'IBM Plex Mono','DejaVu Sans Mono',monospace" font-size="19">
+      madmom ported to plain JavaScript
+    </text>
+    <text x="0" y="128" fill="#8fa3a7"
+          font-family="'IBM Plex Mono','DejaVu Sans Mono',monospace" font-size="19">
+      no backend · no WASM · no ONNX
+    </text>
+  </g>
+
+  <!-- bar steps, the 1 lit -->
+  <g transform="translate(700, 416)">
+    <rect x="0" y="0" width="96" height="56" rx="8" fill="rgba(45,217,229,0.16)" stroke="#2dd9e5" stroke-width="2"/>
+    <text x="48" y="37" text-anchor="middle" fill="#e9f0ee" font-family="'IBM Plex Mono','DejaVu Sans Mono',monospace" font-size="24">1</text>
+    <g fill="rgba(17,31,42,0.72)" stroke="#284454" stroke-width="2">
+      <rect x="108" y="0" width="96" height="56" rx="8"/>
+      <rect x="216" y="0" width="96" height="56" rx="8"/>
+      <rect x="324" y="0" width="96" height="56" rx="8"/>
+    </g>
+    <g fill="#8fa3a7" font-family="'IBM Plex Mono','DejaVu Sans Mono',monospace" font-size="24" text-anchor="middle">
+      <text x="156" y="37">2</text>
+      <text x="264" y="37">3</text>
+      <text x="372" y="37">4</text>
+    </g>
+  </g>
+
+  <!-- confidence bar -->
+  <g transform="translate(700, 508)">
+    <rect x="0" y="0" width="420" height="10" rx="5" fill="rgba(143,163,167,0.18)"/>
+    <rect x="0" y="0" width="357" height="10" rx="5" fill="url(#conf)"/>
+  </g>
+</svg>
