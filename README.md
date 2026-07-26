@@ -23,8 +23,10 @@ or system monitor) or "Tab audio" to pick up whatever is playing in another tab.
 - **Position inside the bar**, with the 1 located by the downbeat model.
 - **Per-hit accent**: each beat lights up in proportion to the energy that
   actually sounded there, so the accent pattern becomes visible.
-- **A dancing robot** whose arms swing on the beat and whose hips shift once per
-  bar — in 4/4 you see four arm swings per hip shift.
+- **A dancing robot** with eight moves, or auto-rotation every 4 bars. A move
+  separates its *look* from its *subdivision*, so the same step runs at half
+  time, on the beat or on eighths — the arms can be on eighths while the hips
+  follow the bar, which is what makes the meter readable at a glance.
 - **Silence gate**, so it does not invent a tempo when there is no music.
 
 ## How it works
@@ -61,6 +63,7 @@ node test/silence.mjs      # the gate: noise vs music
 node test/gapfill.mjs      # filling in skipped beats
 node test/meter.mjs a.f32  # meter on songs of known meter
 node test/playlist.mjs a.f32   # meter recovery when the track changes
+node test/dance.mjs        # dance subdivisions, without a browser
 ```
 
 The parity tests need fixtures that are not versioned (~11 MB). Regenerate them
@@ -101,7 +104,7 @@ web/                 what gets published
 ├── index.html, app.js, styles.css
 ├── worklet.js       collects 441-sample hops
 ├── downbeat-worker.js
-├── src/             the port: features, network, HMM, grid, accent, meter
+├── src/             the port: features, network, HMM, grid, accent, meter, dance
 └── public/models/   exported weights (2.7 MB)
 tools/               exporters from madmom (Python)
 test/                parity and behaviour (Node)

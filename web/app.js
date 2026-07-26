@@ -3,6 +3,7 @@ import { BeatTracker } from "./src/tracker.js";
 import { AccentProfile } from "./src/accent.js";
 import { BeatGrid } from "./src/grid.js";
 import { estimateBar, MeterTally, CANDIDATES } from "./src/downbeat_decode.js";
+import { Dancer, MOVES } from "./src/dance.js";
 
 const CIRCUMFERENCE = 2 * Math.PI * 98;
 const els = {
@@ -27,6 +28,7 @@ const els = {
   deviceSelect: document.getElementById("deviceSelect"),
   meterSelect: document.getElementById("meterSelect"),
   dancer: document.getElementById("dancer"),
+  danceSelect: document.getElementById("danceSelect"),
   onboarding: document.getElementById("onboarding"),
   sourcebar: document.getElementById("sourcebar"),
 };
@@ -81,34 +83,20 @@ function renderSteps(active, intensity = 1, predicted = false) {
   });
 }
 
-/**
- * The robot moves on two clocks: arms and bounce on every beat, hips and legs
- * once per bar. That is what makes the meter readable — in 4/4 you see four arm
- * swings per hip shift.
- */
-let dancerBeat = 0;
-let dancerBar = 0;
+const dancer = new Dancer(els.dancer);
 
-function danceBeat(inBar, intensity) {
-  const d = els.dancer;
-  d.classList.remove("idle");
-  d.style.setProperty("--hit", intensity.toFixed(3));
-  if (grid.period) {
-    // the motion tracks the tempo instead of running at a fixed speed
-    d.style.setProperty("--beat-ms", `${Math.round(grid.period * 450)}ms`);
-  }
-  dancerBeat ^= 1;
-  d.dataset.beat = String(dancerBeat);
-  if (inBar === 1) {
-    dancerBar ^= 1;
-    d.dataset.bar = String(dancerBar);
-  }
-  d.classList.toggle("downbeat", inBar === 1);
-  // restart the squash even if two beats land close together
-  d.classList.remove("hit");
-  void d.offsetWidth;
-  d.classList.add("hit");
-  window.setTimeout(() => d.classList.remove("hit"), 90);
+for (const m of MOVES) {
+  const o = document.createElement("option");
+  o.value = m.id;
+  o.textContent = m.label;
+  els.danceSelect.appendChild(o);
+}
+{
+  const o = document.createElement("option");
+  o.value = "";
+  o.textContent = "Auto (every 4 bars)";
+  els.danceSelect.prepend(o);
+  els.danceSelect.value = "swing";
 }
 
 function flashBeat(inBar, predicted, lateMs = 0) {
@@ -123,7 +111,10 @@ function flashBeat(inBar, predicted, lateMs = 0) {
   }
   if (inBar === 1) barStartAt = lastBeatAt;
   renderSteps(inBar, intensity, predicted);
-  danceBeat(inBar, intensity);
+  // the accent of the beat sets how hard the next ticks land; the ticks
+  // themselves are driven from the continuous position in frame()
+  dancer.onBeat(intensity);
+  dancer.setDownbeat(inBar === 1);
   // the CSS defines .ring-wrap.hit .ring-pulse and .ring-progress.downbeat
   els.ringProgress.classList.toggle("downbeat", inBar === 1);
   els.ringWrap.classList.remove("hit");
@@ -162,8 +153,7 @@ function frame() {
       els.bpm.textContent = "--.-";
       els.ringProgress.style.strokeDashoffset = String(CIRCUMFERENCE);
       renderSteps(0);
-      els.dancer.classList.add("idle");
-      els.dancer.classList.remove("downbeat");
+      dancer.idle();
       // without this, when audio comes back the ring starts with the old tempo
       // before a single new beat has arrived
       lastBeatAt = null;
@@ -191,6 +181,13 @@ function frame() {
     els.bpm.textContent = grid.bpm.toFixed(1);
     const sinceBeat = (now - lastBeatAt) / 1000;
     els.nextBeat.textContent = String(Math.max(0, Math.round((grid.period - sinceBeat) * 1000)));
+
+    // A subdivision below the beat has no event to hang off, so the dancer runs
+    // off a continuous position instead: whole beats from the grid plus the
+    // fraction elapsed since the last one.
+    const beatPos = grid.index + Math.min(1.2, sinceBeat / grid.period);
+    const barPos = (beatPos - grid.barOrigin) / grid.meter;
+    dancer.update(beatPos, barPos, grid.meter, grid.period * 1000);
   }
   els.cpu.textContent = cpuAvg.toFixed(2);
   requestAnimationFrame(frame);
@@ -476,12 +473,16 @@ function resetState() {
   els.confidenceBar.style.width = "0%";
   els.confidenceLabel.textContent = "0%";
   els.bpm.textContent = "--.-";
-  els.dancer.classList.add("idle");
+  dancer.idle();
 }
+
+els.danceSelect.addEventListener("change", () => {
+  dancer.setMove(els.danceSelect.value || null);
+});
 
 els.resetBtn.addEventListener("click", resetState);
 
 els.ringProgress.style.strokeDasharray = String(CIRCUMFERENCE);
-els.dancer.classList.add("idle");
+dancer.idle();
 renderSteps(1);
 requestAnimationFrame(frame);

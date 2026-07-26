@@ -89,8 +89,8 @@
           </div>
         </div>
 
-        <!-- Arms swing on every beat, hips and legs shift once per bar. -->
-        <div class="dancer" id="dancer" data-beat="0" data-bar="0">
+        <!-- Which parts move and how often comes from src/dance.js. -->
+        <div class="dancer" id="dancer" data-style="swing" data-arms="0" data-hips="0">
           <svg viewBox="0 0 200 250" role="img" aria-label="robot dancing to the beat">
             <g class="bot">
               <!-- x overlaps the torso (60..140) so the arms stay attached, and the
@@ -132,6 +132,10 @@
       </section>
 
       <section class="bottombar">
+        <label class="field">
+          <span>dance</span>
+          <select id="danceSelect"></select>
+        </label>
         <label class="field">
           <span>meter</span>
           <select id="meterSelect">
