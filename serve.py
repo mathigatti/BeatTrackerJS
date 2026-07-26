@@ -31,7 +31,10 @@ def main() -> None:
     root = Path(__file__).resolve().parent / "web"
     handler = partial(NoCacheHandler, directory=str(root))
     server = ThreadingHTTPServer(("127.0.0.1", port), handler)
-    print(f"http://localhost:{port}  (no cache)")
+    # Numeric address on purpose: this binds IPv4 only, and a browser that
+    # resolves `localhost` to ::1 first would get ECONNREFUSED with the server
+    # perfectly alive.
+    print(f"http://127.0.0.1:{port}  (no cache)")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

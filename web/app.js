@@ -387,10 +387,28 @@ async function useTabAudio() {
   attach(stream, "shared tab");
 }
 
+// The browser's own errors here are famously unhelpful ("Permission denied by
+// user" is the same message whether you clicked Block, dismissed the dialog, or
+// blocked the site months ago), so they get translated into what to actually do.
+function explain(err) {
+  switch (err.name) {
+    case "NotAllowedError":
+      return "permission denied — click the icon on the left of the address bar, allow the microphone, and reload (cancelling the tab picker gives this too)";
+    case "NotFoundError":
+      return "no audio input found: check that some capture device exists";
+    case "NotReadableError":
+      return "the device is busy: another app is holding the microphone";
+    case "OverconstrainedError":
+      return "that device is no longer available; pick another source";
+    default:
+      return err.message ?? "error";
+  }
+}
+
 const guard = (fn) => () => {
   fn().catch((err) => {
     console.error(err);
-    setStatus(err.message ?? "error", "error");
+    setStatus(explain(err), "error");
   });
 };
 
