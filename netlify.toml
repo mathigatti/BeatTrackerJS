@@ -1,0 +1,29 @@
+# Static site: no build step, `web/` is published as-is.
+# The model is just data (.bin + .json) the browser downloads like any asset.
+
+[build]
+  publish = "web"
+  command = ""
+
+# The models are immutable in name only: a re-export changes the contents but not
+# the filename, so revalidation matters. One day is a reasonable middle ground.
+[[headers]]
+  for = "/public/models/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, must-revalidate"
+
+# Code does change, and a stale ES module mixed with a fresh one breaks weirdly.
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/src/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

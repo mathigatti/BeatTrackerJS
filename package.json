@@ -1,0 +1,15 @@
+{
+  "name": "pulso-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Beat tracking de madmom corriendo entero en el browser, en JavaScript puro",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 serve.py 8090",
+    "test": "node test/parity.mjs && node test/parity_features.mjs && node test/parity_dbn.mjs && node test/parity_e2e.mjs",
+    "test:silence": "node test/silence.mjs",
+    "test:gapfill": "node test/gapfill.mjs",
+    "test:meter": "node test/meter.mjs"
+  },
+  "license": "MIT"
+}

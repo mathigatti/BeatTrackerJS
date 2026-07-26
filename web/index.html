@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pulso — live beat tracking in the browser</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <h1>Pulso</h1>
+          <p>madmom running entirely in the browser</p>
+        </div>
+        <div class="status" id="status">
+          <span class="status-dot"></span>
+          <span id="statusText">not started</span>
+        </div>
+      </header>
+
+      <section class="stage" aria-label="beat phase and dancer">
+        <div class="ring-wrap" id="ringWrap">
+          <svg class="phase-ring" viewBox="0 0 240 240" role="img" aria-label="phase ring">
+            <circle class="ring-track" cx="120" cy="120" r="98"></circle>
+            <circle class="ring-progress" id="ringProgress" cx="120" cy="120" r="98"></circle>
+            <circle class="ring-pulse" id="ringPulse" cx="120" cy="120" r="76"></circle>
+          </svg>
+          <div class="readout">
+            <div class="bpm" id="bpm">--.-</div>
+            <div class="unit">BPM</div>
+          </div>
+        </div>
+
+        <!-- Arms swing on every beat, hips and legs shift once per bar. -->
+        <div class="dancer" id="dancer" data-beat="0" data-bar="0">
+          <svg viewBox="0 0 200 250" role="img" aria-label="robot dancing to the beat">
+            <g class="bot" id="botBody">
+              <!-- arms behind the torso -->
+              <g class="arm arm-l">
+                <rect x="34" y="96" width="16" height="60" rx="8"></rect>
+                <circle class="hand" cx="42" cy="158" r="10"></circle>
+              </g>
+              <g class="arm arm-r">
+                <rect x="150" y="96" width="16" height="60" rx="8"></rect>
+                <circle class="hand" cx="158" cy="158" r="10"></circle>
+              </g>
+
+              <g class="hips">
+                <g class="leg leg-l">
+                  <rect x="72" y="168" width="18" height="58" rx="9"></rect>
+                  <rect class="foot" x="64" y="222" width="34" height="14" rx="7"></rect>
+                </g>
+                <g class="leg leg-r">
+                  <rect x="110" y="168" width="18" height="58" rx="9"></rect>
+                  <rect class="foot" x="102" y="222" width="34" height="14" rx="7"></rect>
+                </g>
+              </g>
+
+              <rect class="torso" x="60" y="92" width="80" height="82" rx="18"></rect>
+              <rect class="chest-light" x="88" y="116" width="24" height="24" rx="6"></rect>
+
+              <g class="head" id="botHead">
+                <rect x="58" y="26" width="84" height="62" rx="18"></rect>
+                <circle class="eye eye-l" cx="82" cy="56" r="9"></circle>
+                <circle class="eye eye-r" cx="118" cy="56" r="9"></circle>
+                <rect class="antenna" x="97" y="4" width="6" height="22" rx="3"></rect>
+                <circle class="antenna-tip" cx="100" cy="6" r="7"></circle>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </section>
+
+      <div class="countdown">
+        next beat in <span id="nextBeat">---</span> ms
+      </div>
+
+      <section class="sequencer" aria-label="bar">
+        <div class="steps" id="steps"></div>
+      </section>
+
+      <section class="data-panel" aria-label="tracker data">
+        <div class="datum">
+          <span>meter</span>
+          <strong id="meter">4/4</strong>
+        </div>
+        <div class="datum">
+          <span>beat</span>
+          <strong id="beatInBar">1</strong>
+        </div>
+        <div class="datum">
+          <span>activation</span>
+          <strong id="activation">0.00</strong>
+        </div>
+        <div class="datum">
+          <span>CPU per hop</span>
+          <strong><span id="cpu">--</span> ms</strong>
+        </div>
+        <div class="datum">
+          <span>downbeat</span>
+          <strong id="downbeat">--</strong>
+        </div>
+        <div class="confidence">
+          <div class="confidence-head">
+            <span>confidence</span>
+            <strong id="confidenceLabel">0%</strong>
+          </div>
+          <div class="bar">
+            <div id="confidenceBar"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="controls" aria-label="controls">
+        <button id="startBtn" type="button">Listen to input</button>
+        <button id="tabBtn" type="button">Tab audio</button>
+        <button id="nudgeBtn" type="button">The 1 is here</button>
+        <button id="resetBtn" type="button">Reset</button>
+      </section>
+
+      <section class="controls" aria-label="audio source">
+        <label class="source">
+          <span>source</span>
+          <select id="deviceSelect" disabled>
+            <option value="">(hit "Listen to input" first)</option>
+          </select>
+        </label>
+        <label class="source">
+          <span>meter</span>
+          <select id="meterSelect">
+            <option value="">automatic (3, 4 or 6)</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+          </select>
+        </label>
+      </section>
+    </main>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

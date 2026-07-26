@@ -1,0 +1,579 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b1620;
+  --panel: #111f2a;
+  --line: #284454;
+  --text: #e9f0ee;
+  --muted: #8fa3a7;
+  --amber: #ffb23f;
+  --cyan: #2dd9e5;
+  --green: #66d17a;
+  --red: #ff6d5d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(20, 42, 55, 0.66), rgba(8, 17, 25, 0.94)),
+    var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.shell {
+  width: min(920px, calc(100vw - 32px));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 28px 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto auto;
+  gap: 22px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid rgba(143, 163, 167, 0.22);
+  padding-bottom: 16px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(28px, 6vw, 52px);
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 154px;
+  justify-content: flex-end;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 0 18px rgba(255, 178, 63, 0.7);
+}
+
+.status.locked .status-dot {
+  background: var(--green);
+  box-shadow: 0 0 18px rgba(102, 209, 122, 0.75);
+}
+
+.status.error .status-dot {
+  background: var(--red);
+  box-shadow: 0 0 18px rgba(255, 109, 93, 0.75);
+}
+
+/* Ring and dancer side by side; they stack on narrow screens. */
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: center;
+  justify-items: center;
+  gap: 24px;
+  min-height: 360px;
+}
+
+@media (max-width: 700px) {
+  .stage {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ring-wrap {
+  position: relative;
+  width: min(60vw, 340px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 0 30px rgba(255, 178, 63, 0.08));
+}
+
+.phase-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ring-track,
+.ring-progress,
+.ring-pulse {
+  fill: none;
+  stroke-width: 12;
+}
+
+.ring-track {
+  stroke: rgba(143, 163, 167, 0.2);
+}
+
+.ring-progress {
+  stroke: var(--amber);
+  stroke-linecap: round;
+  stroke-dasharray: 615.75;
+  stroke-dashoffset: 615.75;
+  /* no transition on stroke-dashoffset: app.js rewrites it every frame, and the
+     transition animates the rewind on reset, so the ring never closed */
+  transition: opacity 120ms ease, stroke 120ms ease;
+}
+
+.ring-progress.downbeat {
+  stroke: var(--cyan);
+}
+
+.ring-pulse {
+  stroke: rgba(255, 178, 63, 0.1);
+  stroke-width: 1;
+  transform-origin: center;
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+
+.ring-wrap.hit .ring-pulse {
+  opacity: 0.95;
+  transform: scale(1.15);
+}
+
+.readout {
+  position: absolute;
+  text-align: center;
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+.bpm {
+  font-size: clamp(44px, 12vw, 82px);
+  line-height: 0.92;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit,
+.countdown,
+.datum span,
+.confidence-head span {
+  color: var(--muted);
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.countdown {
+  font-size: 15px;
+}
+
+.countdown span {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.sequencer {
+  border-top: 1px solid rgba(143, 163, 167, 0.18);
+  border-bottom: 1px solid rgba(143, 163, 167, 0.18);
+  padding: 18px 0;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.step {
+  min-height: 72px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 20px;
+  background: rgba(17, 31, 42, 0.72);
+}
+
+.step.downbeat {
+  border-color: rgba(45, 217, 229, 0.75);
+  color: var(--cyan);
+}
+
+.step.active {
+  border-color: var(--amber);
+  color: var(--text);
+  background: rgba(255, 178, 63, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(255, 178, 63, 0.22), 0 0 24px rgba(255, 178, 63, 0.1);
+}
+
+.step.active.downbeat {
+  border-color: var(--cyan);
+  background: rgba(45, 217, 229, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(45, 217, 229, 0.22), 0 0 24px rgba(45, 217, 229, 0.12);
+}
+
+.data-panel {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(220px, 1.4fr);
+  gap: 12px;
+}
+
+.datum,
+.confidence {
+  border: 1px solid rgba(143, 163, 167, 0.18);
+  border-radius: 6px;
+  background: rgba(17, 31, 42, 0.6);
+  padding: 14px;
+}
+
+.datum {
+  display: grid;
+  gap: 8px;
+}
+
+.datum strong,
+.confidence strong {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.confidence-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.bar {
+  height: 10px;
+  background: rgba(143, 163, 167, 0.18);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar div {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--amber), var(--green));
+  transition: width 120ms ease;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.toggle {
+  min-height: 42px;
+  border: 1px solid rgba(143, 163, 167, 0.28);
+  border-radius: 6px;
+  background: rgba(233, 240, 238, 0.06);
+  color: var(--text);
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.toggle input {
+  accent-color: var(--cyan);
+}
+
+button {
+  min-height: 42px;
+  border: 1px solid rgba(143, 163, 167, 0.28);
+  border-radius: 6px;
+  background: rgba(233, 240, 238, 0.08);
+  color: var(--text);
+  padding: 0 16px;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: rgba(233, 240, 238, 0.55);
+  background: rgba(233, 240, 238, 0.13);
+}
+
+@media (max-width: 760px) {
+  .shell {
+    width: min(100vw - 24px, 560px);
+    gap: 16px;
+    padding: 18px 0;
+  }
+
+  .topbar,
+  .controls {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .status,
+  .controls,
+  button {
+    width: 100%;
+  }
+
+  .status {
+    justify-content: flex-start;
+  }
+
+  .instrument {
+    min-height: 300px;
+  }
+
+  .data-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .confidence {
+    grid-column: 1 / -1;
+  }
+}
+
+.source {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.source select {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.source select:disabled {
+  opacity: 0.5;
+}
+
+/* Intensity of the active beat according to the detected accent.
+   --accent goes from 0 (barely lights up) to 1 (full).
+   These rules come after .step.active so they override it. */
+.step.active {
+  border-color: rgba(255, 178, 63, calc(0.18 + 0.82 * var(--accent, 1)));
+  background: rgba(255, 178, 63, calc(0.02 + 0.16 * var(--accent, 1)));
+  color: rgba(233, 240, 238, calc(0.45 + 0.55 * var(--accent, 1)));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 178, 63, calc(0.04 + 0.18 * var(--accent, 1))),
+    0 0 24px rgba(255, 178, 63, calc(0.02 + 0.1 * var(--accent, 1)));
+}
+
+.step.active.downbeat {
+  border-color: rgba(45, 217, 229, calc(0.18 + 0.82 * var(--accent, 1)));
+  background: rgba(45, 217, 229, calc(0.02 + 0.16 * var(--accent, 1)));
+  box-shadow:
+    inset 0 0 0 1px rgba(45, 217, 229, calc(0.04 + 0.18 * var(--accent, 1))),
+    0 0 24px rgba(45, 217, 229, calc(0.02 + 0.12 * var(--accent, 1)));
+}
+
+/* a beat we filled in because madmom skipped it */
+.step.active.predicted {
+  border-style: dashed;
+}
+
+/* ---------------------------------------------------------------- dancer
+
+   Two independent motions, driven from app.js:
+
+     data-beat  flips 0/1 on every beat  -> arms swing, body bounces
+     data-bar   flips 0/1 on every bar   -> hips and legs shift sideways
+
+   So the arms move at the beat rate and the hips at the bar rate, which is
+   what makes the meter readable at a glance: in 4/4 the hips change every
+   four arm swings.
+
+   --hit  (0..1) is the accent of the current beat: how hard it bounces.
+   --beat-ms is set from the measured period, so the motion tracks the tempo
+   instead of running at a fixed speed. */
+.dancer {
+  --hit: 1;
+  --beat-ms: 160ms;
+  width: min(46vw, 260px);
+  filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.45));
+}
+
+.dancer svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.dancer rect,
+.dancer circle {
+  fill: #cfe0e4;
+}
+
+.dancer .torso {
+  fill: #9fb6bf;
+}
+
+.dancer .head rect {
+  fill: #b9ced5;
+}
+
+.dancer .eye {
+  fill: #0b1620;
+}
+
+.dancer .chest-light,
+.dancer .antenna-tip {
+  fill: var(--amber);
+  transition: fill var(--beat-ms) ease;
+}
+
+.dancer .foot,
+.dancer .hand {
+  fill: #7e969f;
+}
+
+/* every animated group pivots from its joint, not from the svg origin */
+.dancer .arm,
+.dancer .hips,
+.dancer .leg,
+.dancer .head,
+.dancer .bot {
+  transform-box: fill-box;
+  transition: transform var(--beat-ms) cubic-bezier(0.22, 1.2, 0.4, 1);
+}
+
+.dancer .arm-l {
+  transform-origin: 50% 8%;
+}
+
+.dancer .arm-r {
+  transform-origin: 50% 8%;
+}
+
+.dancer .bot {
+  transform-origin: 50% 100%;
+}
+
+.dancer .head {
+  transform-origin: 50% 100%;
+}
+
+.dancer .hips {
+  transform-origin: 50% 0%;
+}
+
+.dancer .leg-l,
+.dancer .leg-r {
+  transform-origin: 50% 4%;
+}
+
+/* --- on the beat: arms alternate, whole body squashes by the accent --- */
+.dancer[data-beat="0"] .arm-l {
+  transform: rotate(28deg);
+}
+
+.dancer[data-beat="0"] .arm-r {
+  transform: rotate(-64deg);
+}
+
+.dancer[data-beat="1"] .arm-l {
+  transform: rotate(64deg);
+}
+
+.dancer[data-beat="1"] .arm-r {
+  transform: rotate(-28deg);
+}
+
+.dancer[data-beat="0"] .head {
+  transform: rotate(-4deg) translateY(calc(2px * var(--hit)));
+}
+
+.dancer[data-beat="1"] .head {
+  transform: rotate(4deg) translateY(calc(2px * var(--hit)));
+}
+
+/* the squash lands on the beat and releases; amplitude follows the accent */
+.dancer.hit .bot {
+  transform: scaleY(calc(1 - 0.07 * var(--hit))) scaleX(calc(1 + 0.05 * var(--hit)));
+  transition-duration: 70ms;
+}
+
+/* --- on the bar: hips and legs lean to the other side --- */
+.dancer[data-bar="0"] .hips {
+  transform: translateX(-7px) rotate(-5deg);
+}
+
+.dancer[data-bar="1"] .hips {
+  transform: translateX(7px) rotate(5deg);
+}
+
+.dancer[data-bar="0"] .leg-l {
+  transform: rotate(7deg);
+}
+
+.dancer[data-bar="0"] .leg-r {
+  transform: rotate(3deg);
+}
+
+.dancer[data-bar="1"] .leg-l {
+  transform: rotate(-3deg);
+}
+
+.dancer[data-bar="1"] .leg-r {
+  transform: rotate(-7deg);
+}
+
+/* the downbeat also lights the chest and the antenna */
+.dancer.downbeat .chest-light,
+.dancer.downbeat .antenna-tip {
+  fill: var(--cyan);
+}
+
+/* nothing playing: stand still, lights off */
+.dancer.idle .bot,
+.dancer.idle .arm,
+.dancer.idle .hips,
+.dancer.idle .leg,
+.dancer.idle .head {
+  transform: none;
+}
+
+.dancer.idle .chest-light,
+.dancer.idle .antenna-tip {
+  fill: #4d626c;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dancer .arm,
+  .dancer .hips,
+  .dancer .leg,
+  .dancer .head,
+  .dancer .bot {
+    transition: none;
+  }
+}

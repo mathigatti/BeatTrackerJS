@@ -1,0 +1,11 @@
+# Test fixtures: ~11 MB of raw audio and reference activations.
+# Regenerate with tools/export_madmom.py and tools/export_downbeats.py.
+test/*.f32
+test/reference*.json
+test/e2e_reference.json
+
+.venv/
+__pycache__/
+node_modules/
+.DS_Store
+.netlify/
