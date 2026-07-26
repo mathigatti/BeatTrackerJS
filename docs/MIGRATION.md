@@ -337,11 +337,31 @@ phase ring stays in place even though the flash arrives late.
 See section 8: it is our own criterion over the ported activations, not a port of
 madmom's decoder. What took tuning was the hysteresis, not the criterion. A
 single 6 s window is wrong often (on a waltz: 3 right and 2 wrong out of 9
-windows), so the decision accumulates with a memory of ~7 windows and requires
-the new candidate to beat the current one by 1.3×. One more condition was needed:
-a minimum score before allowing any change, because the first window of a 4/4
-song voted 3 (candidate 4 gathered no evidence at all) and only the third one
-corrected it.
+windows), so the decision accumulates and requires the new candidate to beat the
+current one by 1.3×. One more condition was needed: a minimum score before
+allowing any change, because the first window of a 4/4 song voted 3 (candidate 4
+gathered no evidence at all) and only the third one corrected it.
+
+**Accumulating as a sum is a trap, and it only shows up on a playlist.** The
+first version summed contrasts with a decay. That saturates at
+`contrast/(1-decay)`, so a leader that built a large total can only be displaced
+by a challenger whose *typical* contrast exceeds what the leader's total reached.
+Measured on a chacarera followed by a 4/4 track, the switch back needed
+`8.46 > 1.3 × 6.48` and made it by 0.04 — with a slightly weaker second song it
+would have stayed on 6/8 for the rest of the session.
+
+Changing the score to a moving **average** compares typical contrasts instead of
+totals, which is scale-free:
+
+| | sum | moving average |
+|---|---|---|
+| recovers 4/4 after the track change | 12 s | **6 s** |
+| margin at the switch | 1.30× (at the threshold) | **2.1×** |
+
+Two more song-change signals help on top of that: a gap of silence between
+tracks, and a tempo jump above 20% while the grid is locked. The threshold is
+that high because inside a single song the median still wobbles by up to 14%
+while the DBN settles, and a false reset throws away the meter already learned.
 
 ---
 

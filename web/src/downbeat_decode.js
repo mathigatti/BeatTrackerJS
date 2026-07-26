@@ -100,23 +100,32 @@ export function estimateBar(activations, T, startFrame, beats, candidates = CAND
 }
 
 /**
- * Accumulates the ranking across windows. The meter is decided with a long
- * memory because changing it remaps every position in the bar at once.
+ * Accumulates the ranking across windows. The meter is decided with memory
+ * because changing it remaps every position in the bar at once.
+ *
+ * The score is a moving AVERAGE of the contrast, not a sum, and that detail is
+ * what makes it survive a playlist. Summing looks equivalent but is not: a sum
+ * saturates at contrast/(1-decay), so a leader that built up a large total can
+ * only be displaced by a challenger whose typical contrast is higher than the
+ * leader's ever was. Measured on a chacarera followed by a 4/4 track, the switch
+ * back needed 8.46 > 1.3 x 6.48 and only just made it — with a slightly weaker
+ * second song it would have stayed on 6 forever. Averaging compares typical
+ * contrasts instead of totals, so recovery only ever costs the memory horizon.
  */
 export class MeterTally {
   constructor(
     meter,
     candidates = CANDIDATES,
-    decay = 0.85,
+    decay = 0.75,
     switchRatio = 1.3,
-    minScore = 0.8,
+    minScore = 0.25,
     tieMargin = 1.3
   ) {
     this.meter = meter;
     // ascending: a multiple of the true meter scores at least as well as it
     // does, so on a tie the smaller one has to win (a waltz is 3, not 6)
     this.candidates = [...candidates].sort((a, b) => a - b);
-    this.decay = decay;         // memory of ~7 windows
+    this.decay = decay;         // memory of ~4 windows (~24 s)
     this.switchRatio = switchRatio;
     this.tieMargin = tieMargin;
     // one window is not enough to change meter: measured, the first window of a
@@ -126,16 +135,19 @@ export class MeterTally {
     this.scores = new Map(candidates.map((m) => [m, 0]));
   }
 
-  reset(meter) {
+  reset(meter = this.meter) {
     this.meter = meter;
     for (const m of this.candidates) this.scores.set(m, 0);
   }
 
   /** Returns the meter in effect after adding this window. */
   push(ranking) {
-    for (const m of this.candidates) this.scores.set(m, this.scores.get(m) * this.decay);
-    for (const r of ranking) {
-      if (this.scores.has(r.meter)) this.scores.set(r.meter, this.scores.get(r.meter) + r.contrast);
+    const seen = new Map(ranking.map((r) => [r.meter, r.contrast]));
+    for (const m of this.candidates) {
+      // a candidate that gathered no evidence this window decays towards zero:
+      // not being scorable while the others are is itself evidence against it
+      const observed = seen.get(m) ?? 0;
+      this.scores.set(m, this.decay * this.scores.get(m) + (1 - this.decay) * observed);
     }
     // the smallest starts out winning; a larger one only displaces it if it
     // beats it by tieMargin, not by noise

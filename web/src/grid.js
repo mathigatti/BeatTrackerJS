@@ -17,6 +17,12 @@ const MIN_BPM = 70;
 const MAX_BPM = 180;
 const FILL_AFTER = 1.25;      // periods to wait before giving a beat up for lost
 const FILL_CONFIDENCE = 0.58; // the same threshold at which the UI says "locked"
+// A tempo that moves this much, while we were confidently tracking the old one,
+// is a different track rather than the tracker drifting. Measured inside a
+// single song the median still wobbles by up to 14% (octave-ish flips while the
+// DBN settles), so the threshold sits well above that and only counts once the
+// grid is locked — a false reset costs the meter it had already learned.
+const NEW_SONG_RATIO = 0.2;
 
 export class BeatGrid {
   constructor(meter = 4) {
@@ -31,6 +37,9 @@ export class BeatGrid {
     this.period = null;
     this.ibis = [];
     this.started = false;
+    // set for one step when the tempo jumps enough to mean a new track; the app
+    // uses it to forget the meter it had accumulated for the previous song
+    this.songChanged = false;
   }
 
   get bpm() {
@@ -59,6 +68,7 @@ export class BeatGrid {
    * one).
    */
   step(now, beatDetected, silent) {
+    this.songChanged = false;
     const out = [];
     if (beatDetected) {
       const beat = this._register(now, false);
@@ -102,6 +112,21 @@ export class BeatGrid {
     if (this.ibis.length < 3) return;
     const sorted = this.ibis.slice(-8).sort((a, b) => a - b);
     const median = sorted[Math.floor(sorted.length / 2)];
-    this.period = this.period === null ? median : 0.7 * this.period + 0.3 * median;
+    if (this.period === null) {
+      this.period = median;
+      return;
+    }
+    if (
+      Math.abs(median - this.period) / this.period > NEW_SONG_RATIO &&
+      this.confidence >= FILL_CONFIDENCE
+    ) {
+      // jump straight there instead of easing in: smoothing across a track
+      // change would spend several seconds reporting a tempo neither song has
+      this.songChanged = true;
+      this.period = median;
+      this.ibis = this.ibis.slice(-3);
+      return;
+    }
+    this.period = 0.7 * this.period + 0.3 * median;
   }
 }

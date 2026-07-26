@@ -17,7 +17,9 @@ or system monitor) or "Tab audio" to pick up whatever is playing in another tab.
 
 - **Tempo and phase** from madmom's online tracker (BLSTM + HMM), 1.9 ms per
   10 ms hop: 19% of a core.
-- **Automatic meter** among 3, 4 and 6, or pinned by hand from 2 to 6.
+- **Automatic meter** among 3, 4 and 6, or pinned by hand from 2 to 6. It is
+  built to survive a playlist: the meter is re-decided as tracks change instead
+  of latching onto the first one it saw.
 - **Position inside the bar**, with the 1 located by the downbeat model.
 - **Per-hit accent**: each beat lights up in proportion to the energy that
   actually sounded there, so the accent pattern becomes visible.
@@ -58,6 +60,7 @@ npm test                   # parity against madmom, stage by stage
 node test/silence.mjs      # the gate: noise vs music
 node test/gapfill.mjs      # filling in skipped beats
 node test/meter.mjs a.f32  # meter on songs of known meter
+node test/playlist.mjs a.f32   # meter recovery when the track changes
 ```
 
 The parity tests need fixtures that are not versioned (~11 MB). Regenerate them

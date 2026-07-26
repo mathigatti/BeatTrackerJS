@@ -14,8 +14,6 @@ const els = {
   bpm: document.getElementById("bpm"),
   nextBeat: document.getElementById("nextBeat"),
   steps: document.getElementById("steps"),
-  meter: document.getElementById("meter"),
-  beatInBar: document.getElementById("beatInBar"),
   activation: document.getElementById("activation"),
   cpu: document.getElementById("cpu"),
   downbeat: document.getElementById("downbeat"),
@@ -23,11 +21,14 @@ const els = {
   confidenceBar: document.getElementById("confidenceBar"),
   startBtn: document.getElementById("startBtn"),
   tabBtn: document.getElementById("tabBtn"),
+  tabBtn2: document.getElementById("tabBtn2"),
   nudgeBtn: document.getElementById("nudgeBtn"),
   resetBtn: document.getElementById("resetBtn"),
   deviceSelect: document.getElementById("deviceSelect"),
   meterSelect: document.getElementById("meterSelect"),
   dancer: document.getElementById("dancer"),
+  onboarding: document.getElementById("onboarding"),
+  sourcebar: document.getElementById("sourcebar"),
 };
 
 const grid = new BeatGrid(4);
@@ -123,7 +124,6 @@ function flashBeat(inBar, predicted, lateMs = 0) {
   if (inBar === 1) barStartAt = lastBeatAt;
   renderSteps(inBar, intensity, predicted);
   danceBeat(inBar, intensity);
-  els.beatInBar.textContent = predicted ? `${inBar} ·` : String(inBar);
   // the CSS defines .ring-wrap.hit .ring-pulse and .ring-progress.downbeat
   els.ringProgress.classList.toggle("downbeat", inBar === 1);
   els.ringWrap.classList.remove("hit");
@@ -133,6 +133,11 @@ function flashBeat(inBar, predicted, lateMs = 0) {
 }
 
 function onGridBeats(beats, now) {
+  // A tempo jump means a different track. The meter accumulated for the previous
+  // song is not evidence about this one, and keeping it is what made the meter
+  // stick across a playlist.
+  if (grid.songChanged) forgetMeter();
+
   for (const { index, inBar, predicted, time } of beats) {
     // the frame comes from the beat's own time: a filled beat belongs to its
     // hop, not to the hop where we noticed it was missing
@@ -155,7 +160,6 @@ function frame() {
       // the last BPM would hang on screen and look like it is still measuring
       setStatus("silence", "");
       els.bpm.textContent = "--.-";
-      els.beatInBar.textContent = "-";
       els.ringProgress.style.strokeDashoffset = String(CIRCUMFERENCE);
       renderSteps(0);
       els.dancer.classList.add("idle");
@@ -164,6 +168,8 @@ function frame() {
       // before a single new beat has arrived
       lastBeatAt = null;
       barStartAt = null;
+      // a gap between tracks is the cleanest song-change signal there is
+      forgetMeter();
     }
   }
   if (silent) {
@@ -216,7 +222,7 @@ async function ensureEngine() {
   }
   await audioCtx.audioWorklet.addModule("worklet.js");
   workletReady = true;
-  els.meter.textContent = METER_LABEL[grid.meter];
+  showMeter();
 
   hopSize = manifest.hop_size;
   audioRing = new Float32Array(WINDOW_HOPS * hopSize);
@@ -264,6 +270,15 @@ function startDownbeatWorker() {
 
 let meterLocked = null;
 let lastNudgeAt = -1e9;
+
+/** Drops what we learned about the meter, keeping the tempo and the grid. */
+function forgetMeter() {
+  meterTally.reset();
+  beatLog = [];
+  if (accent) accent.reset();
+  els.downbeat.textContent = "--";
+}
+
 function manualNudgeRecent() {
   return performance.now() - lastNudgeAt < 20000;
 }
@@ -271,11 +286,22 @@ function manualNudgeRecent() {
 // the notation people actually write for each bar length; nobody writes "6/4"
 const METER_LABEL = { 2: "2/4", 3: "3/4", 4: "4/4", 5: "5/4", 6: "6/8" };
 
+/** In auto mode the selector doubles as the readout: "Auto (4/4)". */
+function showMeter() {
+  const auto = els.meterSelect.options[0];
+  auto.textContent = meterLocked === null && grid.meter
+    ? `Auto (${METER_LABEL[grid.meter] ?? grid.meter})`
+    : "Auto";
+}
+
 function setMeter(next) {
-  if (next === grid.meter) return;
+  if (next === grid.meter) {
+    showMeter();
+    return;
+  }
   grid.meter = next;
   if (accent) accent.setMeter(next);
-  els.meter.textContent = METER_LABEL[next] ?? `${next} beats`;
+  showMeter();
   renderSteps(1, 1);
 }
 
@@ -322,6 +348,8 @@ function attach(stream, label) {
   sourceNode.connect(hopNode);
   // the worklet emits no audio, but connecting it to the destination keeps it running
   hopNode.connect(audioCtx.destination);
+  els.onboarding.hidden = true;
+  els.sourcebar.hidden = false;
   setStatus(`listening: ${label}`, "");
 }
 
@@ -414,14 +442,15 @@ const guard = (fn) => () => {
 
 els.startBtn.addEventListener("click", guard(() => useInput(els.deviceSelect.value || null)));
 els.tabBtn.addEventListener("click", guard(useTabAudio));
+els.tabBtn2.addEventListener("click", guard(useTabAudio));
 els.deviceSelect.addEventListener("change", guard(() => useInput(els.deviceSelect.value)));
 
 els.meterSelect.addEventListener("change", () => {
   const v = els.meterSelect.value;
   meterLocked = v ? Number(v) : null;
   if (meterLocked !== null) setMeter(meterLocked);
-  meterTally.reset(grid.meter);
-  els.downbeat.textContent = "--";
+  forgetMeter();
+  showMeter();
 });
 
 els.nudgeBtn.addEventListener("click", () => {
@@ -443,6 +472,7 @@ function resetState() {
   meterTally.reset(grid.meter);
   if (audioRing) audioRing.fill(0);
   els.downbeat.textContent = "--";
+  showMeter();
   els.confidenceBar.style.width = "0%";
   els.confidenceLabel.textContent = "0%";
   els.bpm.textContent = "--.-";

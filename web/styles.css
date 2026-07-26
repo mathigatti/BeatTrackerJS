@@ -26,33 +26,33 @@ body {
 }
 
 .shell {
-  width: min(920px, calc(100vw - 32px));
-  min-height: 100vh;
+  width: min(920px, calc(100vw - 28px));
   margin: 0 auto;
-  padding: 28px 0;
-  display: grid;
-  grid-template-rows: auto 1fr auto auto auto;
-  gap: 22px;
+  padding: 14px 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .topbar {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 20px;
+  gap: 16px;
   border-bottom: 1px solid rgba(143, 163, 167, 0.22);
-  padding-bottom: 16px;
+  padding-bottom: 10px;
 }
 
 h1 {
   margin: 0;
-  font-size: clamp(28px, 6vw, 52px);
-  line-height: 0.95;
-  letter-spacing: 0;
+  /* vmin, not vw: on a laptop the constraint is height, not width */
+  font-size: clamp(20px, 3.2vmin, 30px);
+  line-height: 1;
+  letter-spacing: 0.01em;
 }
 
 p {
-  margin: 8px 0 0;
+  margin: 0;
   color: var(--muted);
 }
 
@@ -86,25 +86,20 @@ p {
   box-shadow: 0 0 18px rgba(255, 109, 93, 0.75);
 }
 
-/* Ring and dancer side by side; they stack on narrow screens. */
+/* Ring and dancer side by side. Both are sized against viewport HEIGHT as well
+   as width: on a laptop the page has ~640px of usable height, and sizing off
+   vw alone is what made it overflow. */
 .stage {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  --piece: min(34vh, 30vw, 260px);
+  display: flex;
   align-items: center;
-  justify-items: center;
-  gap: 24px;
-  min-height: 360px;
-}
-
-@media (max-width: 700px) {
-  .stage {
-    grid-template-columns: 1fr;
-  }
+  justify-content: center;
+  gap: clamp(12px, 4vw, 40px);
 }
 
 .ring-wrap {
   position: relative;
-  width: min(60vw, 340px);
+  width: var(--piece);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -161,7 +156,7 @@ p {
 }
 
 .bpm {
-  font-size: clamp(44px, 12vw, 82px);
+  font-size: calc(var(--piece, 240px) * 0.26);
   line-height: 0.92;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -189,7 +184,7 @@ p {
 .sequencer {
   border-top: 1px solid rgba(143, 163, 167, 0.18);
   border-bottom: 1px solid rgba(143, 163, 167, 0.18);
-  padding: 18px 0;
+  padding: 12px 0;
 }
 
 .steps {
@@ -199,7 +194,7 @@ p {
 }
 
 .step {
-  min-height: 72px;
+  min-height: 54px;
   border: 1px solid var(--line);
   border-radius: 6px;
   display: grid;
@@ -228,41 +223,133 @@ p {
   box-shadow: inset 0 0 0 1px rgba(45, 217, 229, 0.22), 0 0 24px rgba(45, 217, 229, 0.12);
 }
 
-.data-panel {
+/* ------------------------------------------------------- onboarding
+
+   The two sources are the first thing on the page and read as a choice, not as
+   a toolbar: same size, side by side, each explaining what it captures. Once one
+   is connected the whole block is replaced by the compact source bar. */
+.onboarding {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(220px, 1.4fr);
+  gap: 10px;
+}
+
+.lead {
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.lead strong {
+  color: var(--text);
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.datum,
-.confidence {
-  border: 1px solid rgba(143, 163, 167, 0.18);
-  border-radius: 6px;
-  background: rgba(17, 31, 42, 0.6);
-  padding: 14px;
-}
-
-.datum {
+.choice {
   display: grid;
-  gap: 8px;
+  gap: 4px;
+  padding: 14px 16px;
+  text-align: left;
+  min-height: 0;
+  border-color: rgba(143, 163, 167, 0.35);
+  background: rgba(17, 31, 42, 0.7);
 }
 
-.datum strong,
-.confidence strong {
-  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+.choice:hover {
+  border-color: var(--cyan);
+  background: rgba(45, 217, 229, 0.08);
+}
+
+.choice-icon {
   font-size: 20px;
-  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.choice-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.choice-desc {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.sourcebar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ------------------------------------------------------------ fields */
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.field.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.field select {
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 13px;
+  text-transform: none;
+}
+
+.field.grow select {
+  flex: 1;
+}
+
+.field select:disabled {
+  opacity: 0.5;
+}
+
+/* --------------------------------------------------------- bottom bar */
+
+.bottombar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.confidence {
+  flex: 1;
+  min-width: 0;
 }
 
 .confidence-head {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.confidence strong {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
 }
 
 .bar {
-  height: 10px;
+  height: 8px;
   background: rgba(143, 163, 167, 0.18);
   border-radius: 999px;
   overflow: hidden;
@@ -275,39 +362,76 @@ p {
   transition: width 120ms ease;
 }
 
-.controls {
+/* ----------------------------------------------------------- details
+
+   Diagnostics, collapsed by default: useful while developing, noise for
+   someone who just wants to see the beat. */
+.advanced {
+  border-top: 1px solid rgba(143, 163, 167, 0.18);
+  padding-top: 8px;
+}
+
+.advanced summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  text-transform: uppercase;
+  font-size: 12px;
+  list-style: none;
+}
+
+.advanced summary::before {
+  content: "\25B8  ";
+}
+
+.advanced[open] summary::before {
+  content: "\25BE  ";
+}
+
+.advanced-body {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 10px;
+  align-items: start;
+}
+
+.datum {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(143, 163, 167, 0.18);
+  border-radius: 6px;
+  background: rgba(17, 31, 42, 0.6);
+  padding: 8px 10px;
+}
+
+.datum strong {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.nudge {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 10px;
-  justify-content: flex-end;
+  gap: 12px;
 }
 
-.toggle {
-  min-height: 42px;
-  border: 1px solid rgba(143, 163, 167, 0.28);
-  border-radius: 6px;
-  background: rgba(233, 240, 238, 0.06);
-  color: var(--text);
-  padding: 0 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
-  font-size: 13px;
-  text-transform: uppercase;
+.hint {
+  color: var(--muted);
+  font-size: 12.5px;
 }
 
-.toggle input {
-  accent-color: var(--cyan);
-}
+/* ---------------------------------------------------------- buttons */
 
 button {
-  min-height: 42px;
+  min-height: 38px;
   border: 1px solid rgba(143, 163, 167, 0.28);
   border-radius: 6px;
   background: rgba(233, 240, 238, 0.08);
   color: var(--text);
-  padding: 0 16px;
+  padding: 0 14px;
   font: inherit;
   cursor: pointer;
 }
@@ -317,64 +441,72 @@ button:hover {
   background: rgba(233, 240, 238, 0.13);
 }
 
-@media (max-width: 760px) {
-  .shell {
-    width: min(100vw - 24px, 560px);
-    gap: 16px;
-    padding: 18px 0;
-  }
-
-  .topbar,
-  .controls {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .status,
-  .controls,
-  button {
-    width: 100%;
-  }
-
-  .status {
-    justify-content: flex-start;
-  }
-
-  .instrument {
-    min-height: 300px;
-  }
-
-  .data-panel {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .confidence {
-    grid-column: 1 / -1;
-  }
-}
-
-.source {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
+.ghost {
+  background: transparent;
   color: var(--muted);
   font-size: 13px;
 }
 
-.source select {
-  flex: 1;
-  min-width: 0;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  background: var(--panel);
+.ghost:hover {
   color: var(--text);
-  font-size: 13px;
 }
 
-.source select:disabled {
-  opacity: 0.5;
+/* ------------------------------------------------------------ phones */
+
+@media (max-width: 700px) {
+  .shell {
+    width: calc(100vw - 20px);
+    gap: 12px;
+  }
+
+  /* the ring and the dancer stay side by side even here: stacking them is what
+     pushed the bar boxes below the fold */
+  .stage {
+    --piece: min(30vh, 42vw);
+    gap: 10px;
+  }
+
+  .choices {
+    grid-template-columns: 1fr;
+  }
+
+  .choice-desc {
+    font-size: 12px;
+  }
+
+  .bottombar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .confidence {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .advanced-body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nudge {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* very short windows (laptop in landscape, phone in landscape) */
+@media (max-height: 620px) {
+  .stage {
+    --piece: min(30vh, 26vw, 200px);
+  }
+
+  .steps {
+    gap: 6px;
+  }
+
+  .step {
+    min-height: 42px;
+  }
 }
 
 /* Intensity of the active beat according to the detected accent.
@@ -419,7 +551,7 @@ button:hover {
 .dancer {
   --hit: 1;
   --beat-ms: 160ms;
-  width: min(46vw, 260px);
+  width: var(--piece, 240px);
   filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.45));
 }
 
