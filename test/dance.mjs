@@ -76,6 +76,35 @@ console.log(`\nauto over 64 bars: ${seen.length} changes, ${uniq.size}/${MOVES.l
 console.log(`  order: ${seen.slice(0, MOVES.length + 1).join(" -> ")}`);
 if (uniq.size !== MOVES.length) bad++;
 
+// --- continuous moves: --flow has to sweep the full -1..1 range over exactly
+// its declared period, and be smooth (no jump between consecutive frames).
+console.log("\ncontinuous | period | range          | max step | zero at downbeat");
+for (const m of MOVES.filter((x) => x.flow)) {
+  const d = new Dancer(stubElement());
+  d.setMove(m.id);
+  const period = m.flow === "bar" ? 1 : 2;   // in bars
+  const N = 2048;
+  const vals = [];
+  for (let i = 0; i <= N; i++) vals.push(d.flowValue((i / N) * period));
+
+  const lo = Math.min(...vals);
+  const hi = Math.max(...vals);
+  let maxStep = 0;
+  for (let i = 1; i < vals.length; i++) maxStep = Math.max(maxStep, Math.abs(vals[i] - vals[i - 1]));
+  // it must return to where it started, or the motion would drift over time
+  const closes = Math.abs(vals[0] - vals[vals.length - 1]) < 1e-9;
+  const full = lo < -0.999 && hi > 0.999;
+  const smooth = maxStep < 0.02;
+  if (!full || !smooth || !closes) bad++;
+
+  console.log(
+    `${m.label.padEnd(18)} | ${String(period).padStart(2)} bar | ` +
+      `${lo.toFixed(3)}..${hi.toFixed(3)} ${full ? "ok " : "BAD"} | ` +
+      `${maxStep.toFixed(4)} ${smooth ? "ok " : "BAD"} | ` +
+      `${d.flowValue(0).toFixed(3)} ${closes ? "loops" : "DRIFTS"}`
+  );
+}
+
 
 console.log(`\n${bad === 0 ? "DANCE OK" : `${bad} MOVES WRONG`}`);
 process.exit(bad === 0 ? 0 : 1);

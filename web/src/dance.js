@@ -14,6 +14,13 @@
 // Everything is driven from a continuous beat position rather than from beat
 // events, because a subdivision below the beat (eighths) has no event to hang
 // off — it falls between two of them.
+//
+// A move can also declare a `flow`: a slow continuous motion spanning a whole
+// bar or two, the way people roll their hips across a bar rather than snapping
+// on each beat. That cannot be a 0/1 toggle, so the Dancer publishes `--flow`,
+// a value sweeping -1..1 over the flow's period, and the CSS reads it directly.
+// Anything driven by --flow must not carry a transition, or it would lag a value
+// that already changes every frame.
 
 export const MOVES = [
   { id: "swing", label: "Swing", style: "swing", arms: 1, hips: "bar" },
@@ -23,7 +30,12 @@ export const MOVES = [
   { id: "robot", label: "Robot", style: "robot", arms: 1, hips: "bar" },
   { id: "robot2", label: "Robot · double", style: "robot", arms: 0.5, hips: "bar" },
   { id: "jump", label: "Jump", style: "jump", arms: 2, hips: 1 },
-  { id: "sway", label: "Sway", style: "sway", arms: 2, hips: "bar" },
+  // --- continuous ones: the body keeps moving between the beats
+  { id: "sway", label: "Sway", style: "sway", arms: 2, hips: "bar", flow: "bar" },
+  { id: "hips", label: "Hip roll", style: "hips", arms: 1, hips: "bar", flow: "bar" },
+  { id: "hips2", label: "Hip roll · slow", style: "hips", arms: 2, hips: "bar2", flow: "bar2" },
+  { id: "walk", label: "Walk back & forth", style: "walk", arms: 1, hips: "bar", flow: "walk" },
+  { id: "lean", label: "Lean", style: "lean", arms: 2, hips: "bar2", flow: "walk" },
 ];
 
 const BARS_PER_MOVE = 4;   // how long each move lasts in auto mode
@@ -50,6 +62,23 @@ export class Dancer {
 
   apply() {
     this.el.dataset.style = this.move.style;
+    if (!this.move.flow) this.el.style.setProperty("--flow", "0");
+  }
+
+  /**
+   * The continuous channel, -1..1.
+   *   bar   one full cycle per bar, crossing zero on the downbeat
+   *   bar2  one full cycle every two bars
+   *   walk  starts at one extreme on the downbeat and takes two bars to return,
+   *         so the body travels one way for a whole bar and back the next
+   */
+  flowValue(barPos) {
+    switch (this.move.flow) {
+      case "bar": return Math.sin(2 * Math.PI * barPos);
+      case "bar2": return Math.sin(Math.PI * barPos);
+      case "walk": return -Math.cos(Math.PI * barPos);
+      default: return 0;
+    }
   }
 
   /** Beats between changes for a part, resolving the meter-relative names. */
@@ -82,6 +111,10 @@ export class Dancer {
         this.move = MOVES[i];
         this.apply();
       }
+    }
+
+    if (this.move.flow) {
+      this.el.style.setProperty("--flow", this.flowValue(barPos).toFixed(4));
     }
 
     const arms = Math.floor(beatPos / this.every("arms", meter));
@@ -118,5 +151,6 @@ export class Dancer {
   idle() {
     this.el.classList.add("idle");
     this.el.classList.remove("downbeat");
+    this.el.style.setProperty("--flow", "0");
   }
 }

@@ -551,6 +551,7 @@ button:hover {
    instead of running at a fixed speed. */
 .dancer {
   --hit: 1;
+  --flow: 0;
   --beat-ms: 160ms;
   width: var(--piece, 240px);
   filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.45));
@@ -687,22 +688,85 @@ button:hover {
 [data-style="jump"] .leg-r { transform: rotate(-4deg); }
 [data-style="jump"][data-hips="1"] .head { transform: translateY(2px); }
 
-/* SWAY: slow and wide, nothing snaps — the calm one */
-[data-style="sway"] .arm,
+/* --- continuous moves --------------------------------------------------
+
+   These read --flow, which the Dancer sweeps from -1 to 1 over a bar (or two)
+   and rewrites every frame. Anything it drives must NOT have a transition: the
+   value is already smooth, and a transition would just make it lag behind. */
+
+/* SWAY: the whole lower body drifts across the bar and back, arms drift with it */
 [data-style="sway"] .hips,
-[data-style="sway"] .leg,
-[data-style="sway"] .head {
-  transition-timing-function: cubic-bezier(0.4, 0, 0.5, 1);
+[data-style="sway"] .head,
+[data-style="sway"] .arm {
+  transition: none;
 }
-[data-style="sway"][data-arms="0"] .arm-l { transform: rotate(40deg); }
-[data-style="sway"][data-arms="0"] .arm-r { transform: rotate(-24deg); }
-[data-style="sway"][data-arms="1"] .arm-l { transform: rotate(24deg); }
-[data-style="sway"][data-arms="1"] .arm-r { transform: rotate(-40deg); }
-[data-style="sway"][data-hips="0"] .hips { transform: translateX(-10px) rotate(-3deg); }
-[data-style="sway"][data-hips="1"] .hips { transform: translateX(10px) rotate(3deg); }
-[data-style="sway"][data-hips="0"] .head { transform: rotate(-6deg); }
-[data-style="sway"][data-hips="1"] .head { transform: rotate(6deg); }
-[data-style="sway"].hit .bot { transform: scaleY(calc(1 - 0.03 * var(--hit))); }
+[data-style="sway"] .hips {
+  transform: translateX(calc(var(--flow) * 12px)) rotate(calc(var(--flow) * 4deg));
+}
+[data-style="sway"] .head {
+  transform: rotate(calc(var(--flow) * -6deg));
+}
+[data-style="sway"] .arm-l { transform: rotate(calc(34deg + var(--flow) * 14deg)); }
+[data-style="sway"] .arm-r { transform: rotate(calc(-34deg + var(--flow) * 14deg)); }
+
+/* HIP ROLL: hips describe a full circuit over the bar, shoulders stay put.
+   The legs counter-rotate slightly so the weight reads as shifting. */
+[data-style="hips"] .hips,
+[data-style="hips"] .leg {
+  transition: none;
+}
+[data-style="hips"] .hips {
+  transform:
+    translateX(calc(var(--flow) * 15px))
+    rotate(calc(var(--flow) * 9deg));
+}
+[data-style="hips"] .leg-l { transform: rotate(calc(var(--flow) * 6deg)); }
+[data-style="hips"] .leg-r { transform: rotate(calc(var(--flow) * 6deg)); }
+[data-style="hips"][data-arms="0"] .arm-l { transform: rotate(38deg); }
+[data-style="hips"][data-arms="0"] .arm-r { transform: rotate(-22deg); }
+[data-style="hips"][data-arms="1"] .arm-l { transform: rotate(22deg); }
+[data-style="hips"][data-arms="1"] .arm-r { transform: rotate(-38deg); }
+[data-style="hips"] .head { transform: rotate(calc(var(--flow) * -3deg)); }
+
+/* WALK: travels one way for a whole bar and back the next. The slight scale
+   sells it as depth rather than a slide, and the legs still step on the beat. */
+[data-style="walk"] {
+  transform: translateX(calc(var(--flow) * 9%)) scale(calc(1 + var(--flow) * 0.04));
+  transition: none;
+}
+[data-style="walk"][data-arms="0"] .arm-l { transform: rotate(34deg); }
+[data-style="walk"][data-arms="0"] .arm-r { transform: rotate(-12deg); }
+[data-style="walk"][data-arms="1"] .arm-l { transform: rotate(12deg); }
+[data-style="walk"][data-arms="1"] .arm-r { transform: rotate(-34deg); }
+[data-style="walk"][data-arms="0"] .leg-l { transform: rotate(16deg); }
+[data-style="walk"][data-arms="0"] .leg-r { transform: rotate(-6deg); }
+[data-style="walk"][data-arms="1"] .leg-l { transform: rotate(-6deg); }
+[data-style="walk"][data-arms="1"] .leg-r { transform: rotate(16deg); }
+[data-style="walk"] .head { transition: none; transform: rotate(calc(var(--flow) * 5deg)); }
+
+/* LEAN: a single slow tilt of the whole body across two bars */
+[data-style="lean"] .bot,
+[data-style="lean"] .hips,
+[data-style="lean"] .head {
+  transition: none;
+}
+[data-style="lean"] .bot {
+  transform: rotate(calc(var(--flow) * 7deg));
+}
+[data-style="lean"] .hips {
+  transform: translateX(calc(var(--flow) * -8px));
+}
+[data-style="lean"] .head {
+  transform: rotate(calc(var(--flow) * -4deg));
+}
+[data-style="lean"][data-arms="0"] .arm-l { transform: rotate(30deg); }
+[data-style="lean"][data-arms="0"] .arm-r { transform: rotate(-46deg); }
+[data-style="lean"][data-arms="1"] .arm-l { transform: rotate(46deg); }
+[data-style="lean"][data-arms="1"] .arm-r { transform: rotate(-30deg); }
+/* the squash would fight the body tilt, so it only scales here */
+[data-style="lean"].hit .bot {
+  transform: rotate(calc(var(--flow) * 7deg)) scaleY(calc(1 - 0.04 * var(--hit)));
+}
 
 /* the squash lands on the tick and releases; amplitude follows the accent */
 .dancer.hit .bot {
@@ -717,6 +781,7 @@ button:hover {
 }
 
 /* nothing playing: stand still, lights off */
+.dancer.idle,
 .dancer.idle .bot,
 .dancer.idle .arm,
 .dancer.idle .hips,

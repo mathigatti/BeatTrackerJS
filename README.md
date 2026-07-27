@@ -23,10 +23,12 @@ or system monitor) or "Tab audio" to pick up whatever is playing in another tab.
 - **Position inside the bar**, with the 1 located by the downbeat model.
 - **Per-hit accent**: each beat lights up in proportion to the energy that
   actually sounded there, so the accent pattern becomes visible.
-- **A dancing robot** with eight moves, or auto-rotation every 4 bars. A move
-  separates its *look* from its *subdivision*, so the same step runs at half
-  time, on the beat or on eighths — the arms can be on eighths while the hips
-  follow the bar, which is what makes the meter readable at a glance.
+- **A dancing robot** with twelve moves, or auto-rotation every 4 bars. A move
+  separates its *look* from its *timing*, so the same step runs at half time, on
+  the beat or on eighths — the arms can be on eighths while the hips follow the
+  bar, which is what makes the meter readable at a glance. Some moves are
+  continuous instead of stepped: the hips roll across a whole bar, or the body
+  walks away for one bar and back the next.
 - **Silence gate**, so it does not invent a tempo when there is no music.
 
 ## How it works
