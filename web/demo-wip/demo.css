@@ -37,6 +37,10 @@ h2 small, .lbl small { color: var(--muted); font-weight: 400; font-size: 13px; }
 .stage { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
 .robot-col { flex: 1 1 240px; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
 .info-col { flex: 2 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.loading { height: 28px; display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; visibility: hidden; }
+.loading.on { visibility: visible; }
+.ring { width: 22px; height: 22px; border-radius: 50%; border: 3px solid rgba(45, 217, 229, 0.2); border-top-color: var(--a); animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .readout { display: grid; gap: 2px; font-size: 13px; width: 100%; max-width: 300px; }
 .readout span { color: var(--muted); }
 
@@ -92,7 +96,7 @@ svg .row-lbl { fill: var(--muted); font-size: 11px; }
   --flow: 0;
   --amp: 1;
   --raise: 0;
-  --sway: 0; --sway2: 0; --bob: 0; --wobg: 0; --woba: 0;
+  --sway: 0; --sway2: 0; --bob: 0; --step: 0; --wobg: 0; --woba: 0;
   --kL: 1; --kR: 0; --kT: 0; --kP: 0;
   --beat-ms: 160ms;
   width: min(300px, 80vw);
@@ -116,28 +120,29 @@ svg .row-lbl { fill: var(--muted); font-size: 11px; }
 .dancer.downbeat .chest-light, .dancer.downbeat .antenna-tip { fill: #4fc3f7; }
 .dancer.idle, .dancer.idle .bot, .dancer.idle .arm, .dancer.idle .hips, .dancer.idle .leg, .dancer.idle .head { transform: none !important; }
 .dancer.idle .chest-light, .dancer.idle .antenna-tip { fill: #4d626c; }
-/* FLUJO (choreo.js): todo continuo, sin transiciones. --sway (-1..1) es el vaivén de un lado al otro (extremo en
+/* FLUJO (choreo.js): todo continuo, sin transiciones. --step (-1..1) cambia de signo en cada tiempo (un pie por tiempo al caminar); --sway (-1..1) es el vaivén de un lado al otro (extremo en
    la nota ancla), --sway2 el mismo a mitad de velocidad, --bob (0..1) un rebote por tiempo (0 en el tiempo);
    --wobg / --woba (0..1) las ondulaciones de las notas de textura graves y agudas; --amp la intensidad;
-   --raise la subida. --kL / --kR / --kT / --kP (0..1, con fundido) pesan cada paso: lateral, rebote,
+   --raise la subida. --kL / --kR / --kT / --kP (0..1, con fundido) pesan cada paso: caminar, rebote,
    transición y pico. */
 [data-style="flujo"] .bot, [data-style="flujo"] .hips, [data-style="flujo"] .head,
 [data-style="flujo"] .arm, [data-style="flujo"] .leg { transition: none; }
 [data-style="flujo"] .bot {
   transform:
-    translateX(calc((var(--sway) * (16px * var(--kL) + 9px * var(--kR) + 14px * var(--kP)) + var(--sway2) * 10px * var(--kT)) * var(--amp)))
-    translateY(calc((var(--bob) * (-1.5px * var(--kL) - 6px * var(--kR) - 13px * var(--kP)) + var(--wobg) * 1.5px) * var(--amp)))
-    rotate(calc((var(--sway) * (3deg * var(--kL) + 1deg * var(--kR) + 3deg * var(--kP)) + var(--sway2) * 4deg * var(--kT)) * var(--amp)));
+    translateX(calc((var(--sway) * (26px * var(--kL) + 9px * var(--kR) + 14px * var(--kP)) + var(--sway2) * 10px * var(--kT)) * var(--amp)))
+    translateY(calc((var(--bob) * (-3px * var(--kL) - 6px * var(--kR) - 13px * var(--kP)) + var(--wobg) * 1.5px) * var(--amp)))
+    rotate(calc((var(--sway) * (1deg * var(--kR) + 3deg * var(--kP)) + var(--sway2) * 4deg * var(--kT)) * var(--amp)))
+    scale(calc(1 + var(--sway) * 0.05 * var(--kL)));
 }
 /* rebote: la cadera gira al revés del cuerpo (twist) */
 [data-style="flujo"] .hips {
-  transform: rotate(calc((var(--sway) * (6deg * var(--kL) - 9deg * var(--kR) + 5deg * var(--kP)) + var(--sway2) * 4deg * var(--kT)) * var(--amp) + var(--wobg) * 1deg));
+  transform: rotate(calc((var(--sway) * (-9deg * var(--kR) + 5deg * var(--kP)) + var(--sway2) * 4deg * var(--kT)) * var(--amp) + var(--wobg) * 1deg));
 }
 [data-style="flujo"] .leg-l {
-  transform: rotate(calc(var(--sway) * -4deg * (var(--kL) + var(--kP)) + (1 - var(--bob)) * 5deg * (var(--kR) + var(--kP)) + var(--wobg) * 2deg * var(--amp)));
+  transform: rotate(calc(var(--sway) * -4deg * var(--kP) + (5deg + 11deg * var(--step)) * var(--kL) + (1 - var(--bob)) * 5deg * (var(--kR) + var(--kP)) + var(--wobg) * 2deg * var(--amp)));
 }
 [data-style="flujo"] .leg-r {
-  transform: rotate(calc(var(--sway) * -4deg * (var(--kL) + var(--kP)) - (1 - var(--bob)) * 5deg * (var(--kR) + var(--kP)) - var(--wobg) * 2deg * var(--amp)));
+  transform: rotate(calc(var(--sway) * -4deg * var(--kP) + (5deg - 11deg * var(--step)) * var(--kL) - (1 - var(--bob)) * 5deg * (var(--kR) + var(--kP)) - var(--wobg) * 2deg * var(--amp)));
 }
 /* la cabeza se lleva la reacción a las notas: cabecea con los graves y se inclina con los agudos */
 [data-style="flujo"] .head {
@@ -145,14 +150,14 @@ svg .row-lbl { fill: var(--muted); font-size: 11px; }
              rotate(calc((var(--sway) * -5deg * (1 - var(--kT)) + var(--sway2) * -7deg * var(--kT)) * var(--amp)
                          + var(--woba) * 12deg * var(--amp) - var(--wobg) * 4deg));
 }
-/* brazos: lateral los balancea, rebote los marca doblados en cada tiempo, transición flotan bajos, pico arriba */
+/* brazos: caminar los balancea con los pasos, rebote los marca doblados en cada tiempo, transición flotan bajos, pico arriba */
 [data-style="flujo"] .arm-l {
   transform: rotate(calc(30deg + 30deg * var(--kR) - 12deg * var(--kT) + 115deg * var(--kP) + var(--raise) * 120deg * (1 - var(--kP))
-    + (var(--sway) * (10deg * var(--kL) + 18deg * var(--kP)) + var(--sway2) * 8deg * var(--kT) + var(--bob) * 18deg * var(--kR)) * var(--amp)
+    + (var(--step) * 11deg * var(--kL) + var(--sway) * 18deg * var(--kP)) + var(--sway2) * 8deg * var(--kT) + var(--bob) * 18deg * var(--kR)) * var(--amp)
     + var(--woba) * 5deg * var(--amp)));
 }
 [data-style="flujo"] .arm-r {
   transform: rotate(calc(-30deg - 30deg * var(--kR) + 12deg * var(--kT) - 115deg * var(--kP) - var(--raise) * 120deg * (1 - var(--kP))
-    + (var(--sway) * (10deg * var(--kL) + 18deg * var(--kP)) + var(--sway2) * 8deg * var(--kT) - var(--bob) * 18deg * var(--kR)) * var(--amp)
+    + (var(--step) * 11deg * var(--kL) + var(--sway) * 18deg * var(--kP)) + var(--sway2) * 8deg * var(--kT) - var(--bob) * 18deg * var(--kR)) * var(--amp)
     - var(--woba) * 5deg * var(--amp)));
 }

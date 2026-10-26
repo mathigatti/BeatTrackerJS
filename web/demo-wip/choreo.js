@@ -67,7 +67,7 @@ export function planBar(history, beats, dist = []) {
 
 // Pasos: "transicion" (pocos graves: vaivén lento, cada 2 compases, brazos flotando), "pico" (máxima intensidad:
 // brazos arriba y rebote en cada tiempo), y dos pasos de base que se alternan cada BASE_SWAP_BARS compases:
-// "lateral" (paso de lado clásico) y "rebote" (rebota en los tiempos con los brazos marcando, cadera en twist).
+// "caminar" (va hacia atrás y adelante, un compás de ida y uno de vuelta, con un paso en cada tiempo) y "rebote" (rebota en los tiempos con los brazos marcando, cadera en twist).
 // Todos comparten el mismo péndulo, así que pasar de uno a otro es un fundido sin cortar la cadencia.
 // El paso cambia poco: una propuesta nueva tiene que repetirse STEP_CONFIRM compases seguidos y pasar al menos
 // KIND_MIN_BARS compases desde el último cambio de paso (STEP_MIN_BARS si solo cambia ancla o forma).
@@ -75,12 +75,13 @@ const STEP_CONFIRM = 2;
 const KIND_MIN_BARS = 4;
 const STEP_MIN_BARS = 8;
 const BASE_SWAP_BARS = 16;
+const WARM_BARS = 4;     // al arrancar, los primeros compases cambian de paso enseguida (no esperar a confirmar)
 const PLL_GAIN = 0.15;   // corrección de fase por compás (fracción del error)
 const PLL_MAX = 0.2;     // como mucho ±20% de velocidad: se ajusta, nunca frena ni salta
 const SMOOTH_S = 1.0;    // constante de tiempo para la intensidad y el fundido entre formas
 const KIND_SMOOTH_S = 1.5;
-const STEPS = ['lateral', 'rebote', 'transicion', 'pico'];
-export const STEP_TEXT = { lateral: 'paso lateral', rebote: 'rebote', transicion: 'transición (pocos graves)', pico: 'pico de intensidad' };
+const STEPS = ['caminar', 'rebote', 'transicion', 'pico'];
+export const STEP_TEXT = { caminar: 'caminar (atrás y adelante)', rebote: 'rebote', transicion: 'transición (pocos graves)', pico: 'pico de intensidad' };
 
 /** Mueve el robot (variables CSS de estilo "flujo") según el plan y el tiempo. */
 export class Choreo {
@@ -95,8 +96,9 @@ export class Choreo {
     this.phase = null;   // fase del vaivén: extremos en múltiplos de π, medio compás de ida = π
     this.lastT = null;
     this.step = null;    // {kind, step, n, anchor, by, shape, label}
-    this.cand = null; this.candN = 0; this.since = 0; this.baseBars = 0; this.nextBase = 'lateral';
+    this.cand = null; this.candN = 0; this.since = 0; this.baseBars = 0; this.nextBase = 'caminar';
     this.lastPlan = null;
+    this.bars = 0;
     this.amp = null;
     this.mix = { ondulado: 0, puntiagudo: 0 };
     this.k = Object.fromEntries(STEPS.map((s) => [s, 0]));
@@ -104,24 +106,25 @@ export class Choreo {
 
   newBar(plan) {
     this.since++;
+    this.bars++;
     const prop = { kind: plan.kind, n: plan.n, anchor: plan.anchor, by: plan.by, shape: plan.shape, label: plan.label };
     const same = (a, b) => a && a.kind === b.kind && a.n === b.n && a.anchor === b.anchor && a.shape === b.shape;
     if (!this.step || this.step.n !== plan.n) { this.setStep(prop); return; }
     if (this.step.kind === 'base' && ++this.baseBars >= BASE_SWAP_BARS && this.since >= STEP_MIN_BARS) {
-      this.setStep({ ...this.step, step: this.step.step === 'lateral' ? 'rebote' : 'lateral' });
+      this.setStep({ ...this.step, step: this.step.step === 'caminar' ? 'rebote' : 'caminar' });
       return;
     }
     if (same(this.step, prop)) { this.cand = null; this.candN = 0; return; }
     if (same(this.cand, prop)) this.candN++; else { this.cand = prop; this.candN = 1; }
     const minBars = prop.kind !== this.step.kind ? KIND_MIN_BARS : STEP_MIN_BARS;
-    if (this.candN >= STEP_CONFIRM && this.since >= minBars) this.setStep(prop);
+    if (this.bars <= WARM_BARS || (this.candN >= STEP_CONFIRM && this.since >= minBars)) this.setStep(prop);
   }
 
   setStep(prop) {
     if (!prop.step) {
       if (prop.kind !== 'base') prop.step = prop.kind;
       else if (this.step?.kind === 'base') prop.step = this.step.step;
-      else { prop.step = this.nextBase; this.nextBase = prop.step === 'lateral' ? 'rebote' : 'lateral'; }
+      else { prop.step = this.nextBase; this.nextBase = prop.step === 'caminar' ? 'rebote' : 'caminar'; }
     }
     if (prop.step !== this.step?.step) this.baseBars = 0;
     this.step = prop; this.cand = null; this.candN = 0; this.since = 0;
@@ -176,11 +179,12 @@ export class Choreo {
     st.setProperty('--sway', sway.toFixed(4));
     st.setProperty('--sway2', sway2.toFixed(4));
     st.setProperty('--bob', bob.toFixed(4));
+    st.setProperty('--step', Math.sin(this.phase * beats).toFixed(4));  // -1..1, cambia de signo en cada tiempo: un pie por tiempo
     st.setProperty('--wobg', wob(plan.texG).toFixed(4));
     st.setProperty('--woba', wob(plan.texA).toFixed(4));
     st.setProperty('--amp', this.amp.toFixed(3));
     st.setProperty('--raise', raise.toFixed(3));
-    st.setProperty('--kL', this.k.lateral.toFixed(3));
+    st.setProperty('--kL', this.k.caminar.toFixed(3));
     st.setProperty('--kR', this.k.rebote.toFixed(3));
     st.setProperty('--kT', this.k.transicion.toFixed(3));
     st.setProperty('--kP', this.k.pico.toFixed(3));

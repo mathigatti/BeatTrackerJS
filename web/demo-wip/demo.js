@@ -14,6 +14,12 @@ const roll = $('#roll');
 const LEAD_S = 0.06;
 const COL = { g: '#ffb23f', a: '#2dd9e5' };
 
+// círculo de carga arriba del robot, mientras carga o escucha y todavía no baila
+function setLoading(text) {
+  $('#loading').classList.toggle('on', !!text);
+  if (text) $('#loading-txt').textContent = text;
+}
+
 const choreo = new Choreo(dancer, (st) => {
   $('#r-step').textContent = st.text;
   $('#r-guide').textContent = st.by;
@@ -47,6 +53,7 @@ async function init() {
   live.onclick = selectLive;
   nav.append(live);
   selectClip(clips[0].id, false);
+  loadModels().catch((e) => console.error(e));
 }
 
 function markSource(id) {
@@ -225,6 +232,7 @@ function clipFrame() {
     S.cur = i;
     renderPattern(t + LEAD_S >= S.bars[0].start ? patternView(S.bars.slice(Math.max(0, i - 2), i), b.beats, S.plans[i]) : null);
   }
+  setLoading(audio.paused ? null : audio.readyState < 3 ? 'cargando…' : !playing ? 'escuchando…' : null);
   const c = clipRows(), win = span * 2.2;
   drawRoll(c.rows, c.lines, t - win * 0.7, t + win * 0.3, t);
 }
@@ -291,10 +299,13 @@ function onHop(hop) {
   }
   if (grid.period) lastDanceBpm = grid.bpm / factor;
   for (const b of grid.step(now, beat !== null, tracker.silent)) {
-    lastBeat = { time: b.time, inBar: b.inBar };
-    beatLines.push({ t: b.time, strong: b.inBar === 1 });
+    // el compás arranca en el primer beat, sin esperar a que el conteo pase por un "1" (igual es arbitrario)
+    if (barStart === null) grid.barOrigin = b.index;
+    const inBar = grid.inBar(b.index);
+    lastBeat = { time: b.time, inBar };
+    beatLines.push({ t: b.time, strong: inBar === 1 });
     if (beatLines.length > 64) beatLines.shift();
-    if (b.inBar === 1) {
+    if (inBar === 1) {
       if (barStart !== null) pending.push([barStart, b.time]);
       barStart = b.time;
     }
@@ -304,20 +315,28 @@ function onHop(hop) {
   $('#status').textContent = tracker.silent ? 'silencio' : grid.confidence > 0.58 ? 'enganchado' : 'escuchando…';
 }
 
+// los modelos se bajan apenas carga la página, así "en vivo" arranca sin esperar
+let models = null;
+let liveWanted = false;  // se pidió audio y todavía no se cortó
+const loadModels = () => (models ??= Promise.all([
+  fetch('/public/models/madmom-beats.json').then((r) => r.json()),
+  fetch('/public/models/madmom-beats.bin').then((r) => r.arrayBuffer()),
+  OnsetDetector.load(here('rt/')),
+]));
+
 async function startLive(getStream) {
+  const s = await getStream();
+  liveWanted = true;
   if (!L.tracker) {
     $('#status').textContent = 'cargando modelos…';
-    const [manifest, bin] = await Promise.all([
-      fetch('/public/models/madmom-beats.json').then((r) => r.json()),
-      fetch('/public/models/madmom-beats.bin').then((r) => r.arrayBuffer()),
-    ]);
+    const [manifest, bin, detector] = await loadModels();
     L.tracker = new BeatTracker(loadModel(manifest, bin), manifest, bin);
-    L.detector = await OnsetDetector.load(here('rt/'));
+    L.detector = detector;
     L.ctx = new AudioContext({ sampleRate: 44100 });
     await L.ctx.audioWorklet.addModule('/worklet.js');
   }
-  const s = await getStream();
   stopLive();
+  liveWanted = true;
   L.stream = s;
   L.tracker.reset(); L.detector.reset(); L.grid.reset(); L.grid.meter = DANCE_BEATS;
   resetLive();
@@ -332,6 +351,7 @@ async function startLive(getStream) {
 }
 
 function stopLive() {
+  liveWanted = false;
   if (L.src) L.src.disconnect();
   if (L.node) { L.node.port.onmessage = null; L.node.disconnect(); }
   if (L.stream) for (const t of L.stream.getTracks()) t.stop();
@@ -340,6 +360,7 @@ function stopLive() {
 
 function selectLive() {
   audio.pause();
+  setLoading(null);
   S.source = 'live';
   markSource('live');
   choreo.reset();
@@ -374,6 +395,8 @@ function liveFrame() {
   if (live) notLiveSince = null; else if (notLiveSince === null) notLiveSince = perf;
   const dancing = ready && (live || perf - notLiveSince < IDLE_AFTER_S * 1000);
   dancer.classList.toggle('idle', !dancing);
+  const st = $('#status').textContent;
+  setLoading(liveWanted && !dancing ? (st.startsWith('cargando') ? 'cargando modelos…' : 'escuchando…') : null);
   // reloj del audio: los hops llegan en ráfagas, así que se interpola y nunca se deja retroceder
   if (L.stream) clock = Math.max(clock, hops / 100 + Math.min(0.05, (perf - lastHopPerf) / 1000));
   const barDur = grid.period ? grid.meter * grid.period : 2;
