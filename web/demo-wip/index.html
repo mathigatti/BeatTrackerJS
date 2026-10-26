@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robot que baila · avances</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b1620">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/demo-wip/demo.css">
+</head>
+<body>
+<main class="shell">
+  <header class="head">
+    <h1>Robot que baila <span class="tag">avances · oct 2026</span></h1>
+    <p class="lead">
+      Escucha música, separa los ataques <b class="c-g">graves</b> (bombo, bajo) de los <b class="c-a">agudos</b>
+      (redoblante, hi-hat, voz), encuentra el patrón que se repite en cada compás y baila con eso.
+      Todo corre en el navegador y <b>sin mirar el futuro</b>, como tendría que hacerlo un robot en vivo.
+    </p>
+  </header>
+
+  <section class="stage-card">
+    <nav class="sources" id="sources" aria-label="fuente de audio"></nav>
+
+    <div class="stage">
+      <div class="robot-col">
+        <div class="dancer idle" id="dancer">
+          <svg viewBox="0 0 200 250" role="img" aria-label="robot bailando">
+            <g class="bot">
+              <g class="arm arm-l"><rect x="46" y="96" width="16" height="62" rx="8"></rect><circle class="hand" cx="54" cy="160" r="10"></circle></g>
+              <g class="arm arm-r"><rect x="138" y="96" width="16" height="62" rx="8"></rect><circle class="hand" cx="146" cy="160" r="10"></circle></g>
+              <g class="hips">
+                <g class="leg leg-l"><rect x="72" y="168" width="18" height="58" rx="9"></rect><rect class="foot" x="64" y="222" width="34" height="14" rx="7"></rect></g>
+                <g class="leg leg-r"><rect x="110" y="168" width="18" height="58" rx="9"></rect><rect class="foot" x="102" y="222" width="34" height="14" rx="7"></rect></g>
+              </g>
+              <rect class="torso" x="60" y="92" width="80" height="82" rx="18"></rect>
+              <rect class="chest-light" x="88" y="116" width="24" height="24" rx="6"></rect>
+              <g class="head">
+                <rect x="58" y="26" width="84" height="62" rx="18"></rect>
+                <circle class="eye eye-l" cx="82" cy="56" r="9"></circle><circle class="eye eye-r" cx="118" cy="56" r="9"></circle>
+                <rect class="antenna" x="97" y="4" width="6" height="22" rx="3"></rect><circle class="antenna-tip" cx="100" cy="6" r="7"></circle>
+              </g>
+            </g>
+          </svg>
+        </div>
+        <div class="readout">
+          <div><span>paso</span> <b id="r-step">–</b></div>
+          <div><span>llega a cada lado en</span> <b id="r-guide">–</b></div>
+        </div>
+      </div>
+
+      <div class="info-col">
+        <div class="controls" id="clip-controls">
+          <button class="play" id="play" type="button" aria-label="reproducir">▶</button>
+          <div class="seg" role="radiogroup" aria-label="con qué baila">
+            <button type="button" data-mode="rt" class="on">tiempo real</button>
+            <button type="button" data-mode="off">offline</button>
+          </div>
+          <span class="bpm" id="bpm">– bpm</span>
+        </div>
+        <div class="controls" id="live-controls" hidden>
+          <button class="btn" id="tab" type="button">Escuchar una pestaña</button>
+          <button class="btn" id="mic" type="button">Micrófono</button>
+          <span class="status" id="status">sin audio</span>
+          <span class="bpm" id="bpm-live">– bpm</span>
+        </div>
+        <p class="hint" id="hint"></p>
+
+        <canvas id="roll" aria-label="ataques graves y agudos en el tiempo"></canvas>
+        <div class="legend" id="legend">
+          <span><i class="dot rt a"></i><i class="dot rt g"></i> tiempo real</span>
+          <span class="off-only"><i class="dot off a"></i><i class="dot off g"></i> offline (referencia)</span>
+          <span><i class="bar-l"></i> compás</span>
+        </div>
+
+        <div class="pattern">
+          <div class="lbl">Patrón que encontró <small>(sonó en los 2 compases anteriores)</small></div>
+          <svg id="pattern"></svg>
+          <div class="lbl"><i class="anchor-sw"></i> ancla: el robot llega al extremo del paso en esa nota</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid2">
+    <div class="box">
+      <h2>Offline <small>la referencia</small></h2>
+      <p>Mira el tema entero. Separa la mezcla en stems (Demucs), transcribe la batería (ADTOF) y las notas (PESTO),
+        y clasifica cada ataque en grave o agudo. Es lenta, pero sirve de referencia y para entrenar.</p>
+    </div>
+    <div class="box">
+      <h2>Tiempo real <small>lo que usaría el robot</small></h2>
+      <p>Solo la mezcla y lo ya escuchado. La CNN de onsets de madmom más una capa chica entrenada con la
+        referencia offline para separar graves de agudos. Portada a JavaScript, verificada contra Python.
+        Cada ataque se conoce ~120 ms después de sonar.</p>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><b>0.93</b><span>beats (F)</span></div>
+    <div class="stat"><b>0.76</b><span>ataques graves (F)</span></div>
+    <div class="stat"><b>0.78</b><span>ataques agudos (F)</span></div>
+    <div class="stat"><b>~120 ms</b><span>latencia de los ataques</span></div>
+  </section>
+  <p class="note">Tiempo real contra la referencia offline, mediana en 18 temas de prueba (otros 18 para ajustar),
+    tolerancia ±50 ms. La referencia es automática, no anotada a mano: los números miden acuerdo, no verdad.</p>
+
+  <section class="box">
+    <h2>Cómo baila</h2>
+    <ul>
+      <li>Por compás, marca en qué semicorcheas hubo ataques graves y agudos. Lo que sonó en los dos compases anteriores es el <b>patrón</b>.</li>
+      <li>Va de un lado al otro una vez por compás y llega al extremo en el <b>ancla</b> (el grave más repetido). Las demás notas del patrón le dan forma: fluido, ondulado o puntiagudo.</li>
+      <li>Cambia de paso según el momento: pocos graves → transición; mucha densidad → pico. Solo decide con lo que ya pasó.</li>
+    </ul>
+  </section>
+
+  <section class="box">
+    <h2>Lo que falta</h2>
+    <ul>
+      <li>En vivo no usa el detector de downbeats: el "1" del robot puede no ser el de la canción.</li>
+      <li>Bombo y bajo se confunden ~25% con tres tipos de features distintos: apunta a ruido en la referencia (stems de Demucs), no al modelo.</li>
+      <li>Falta medir el costo en el hardware del robot y corregir a mano unos compases para tener un techo real.</li>
+    </ul>
+  </section>
+
+  <footer class="foot">Mathias Gatti · <a href="/">BeatTrackerJS</a> (el tracker de beats en el navegador)</footer>
+</main>
+<script type="module" src="/demo-wip/demo.js"></script>
+</body>
+</html>

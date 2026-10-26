@@ -1,0 +1,158 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b1620;
+  --panel: #111f2a;
+  --panel2: #0e1a24;
+  --line: #284454;
+  --text: #e9f0ee;
+  --muted: #8fa3a7;
+  --g: #ffb23f;
+  --a: #2dd9e5;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, rgba(20, 42, 55, 0.66), rgba(8, 17, 25, 0.94)), var(--bg);
+  color: var(--text);
+  font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+a { color: var(--a); }
+.shell { width: min(980px, calc(100vw - 32px)); margin: 0 auto; padding: 22px 0 32px; display: flex; flex-direction: column; gap: 16px; }
+h1 { margin: 0 0 6px; font-size: clamp(22px, 4vw, 32px); line-height: 1.1; }
+h2 { margin: 0 0 6px; font-size: 17px; }
+h2 small, .lbl small { color: var(--muted); font-weight: 400; font-size: 13px; }
+.tag { font-size: 13px; font-weight: 500; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; vertical-align: middle; margin-left: 6px; white-space: nowrap; }
+.lead { margin: 0; color: #c9d6d6; max-width: 70ch; }
+.c-g { color: var(--g); }
+.c-a { color: var(--a); }
+
+.stage-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+.sources { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.sources button { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font: inherit; font-size: 14px; cursor: pointer; }
+.sources button.on { border-color: var(--a); background: rgba(45, 217, 229, 0.12); }
+.sources button.live { margin-left: auto; }
+.sources button.live.on { border-color: var(--g); background: rgba(255, 178, 63, 0.12); }
+
+.stage { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+.robot-col { flex: 1 1 240px; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+.info-col { flex: 2 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.readout { display: grid; gap: 2px; font-size: 13px; width: 100%; max-width: 300px; }
+.readout span { color: var(--muted); }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.controls[hidden] { display: none; }
+.play { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--a); color: #06222a; font-size: 18px; cursor: pointer; }
+.btn { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font: inherit; font-size: 14px; cursor: pointer; }
+.btn:hover, .sources button:hover { border-color: var(--a); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { background: transparent; color: var(--muted); border: 0; padding: 7px 12px; font: inherit; font-size: 14px; cursor: pointer; }
+.seg button.on { background: rgba(45, 217, 229, 0.16); color: var(--text); }
+.bpm { margin-left: auto; font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.status { color: var(--muted); font-size: 14px; }
+.hint { margin: 0; color: var(--muted); font-size: 13px; min-height: 1.5em; }
+
+#roll { width: 100%; height: 200px; display: block; background: var(--panel2); border-radius: 10px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 12px; align-items: center; }
+.legend[data-live] .off-only { display: none; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: -1px; margin-right: 2px; }
+.dot.rt.g { background: var(--g); } .dot.rt.a { background: var(--a); }
+.dot.off.g { border: 2px solid var(--g); } .dot.off.a { border: 2px solid var(--a); }
+.bar-l { display: inline-block; width: 2px; height: 12px; background: var(--muted); vertical-align: -2px; }
+.pattern { display: flex; flex-direction: column; gap: 4px; }
+.lbl { color: var(--muted); font-size: 13px; }
+#pattern { width: 100%; height: 76px; display: block; }
+.anchor-sw { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--text); border-radius: 3px; vertical-align: -1px; }
+svg .cell-off { fill: #1c2f3b; }
+svg .cell-g { fill: var(--g); }
+svg .cell-a { fill: var(--a); }
+svg .anchor { fill: none; stroke: var(--text); stroke-width: 2.5; }
+svg .row-lbl { fill: var(--muted); font-size: 11px; }
+
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.box p { margin: 0; color: #c9d6d6; font-size: 14px; }
+.box ul { margin: 0; padding-left: 18px; color: #c9d6d6; font-size: 14px; display: grid; gap: 4px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; }
+.stat b { font-size: 26px; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 13px; }
+.note { margin: -4px 0 0; color: var(--muted); font-size: 12px; }
+.foot { color: var(--muted); font-size: 13px; text-align: center; padding-top: 8px; }
+
+@media (max-width: 560px) {
+  .robot-col { flex-basis: 100%; }
+  .dancer { width: min(220px, 60vw) !important; }
+  .bpm { margin-left: 0; }
+}
+
+/* ---------------------------------------------------------------- robot (copiado de dataset/annotation_server/static/baile.css) */
+.dancer {
+  --hit: 1;
+  --flow: 0;
+  --amp: 1;
+  --raise: 0;
+  --sway: 0; --sway2: 0; --bob: 0; --wobg: 0; --woba: 0;
+  --kL: 1; --kR: 0; --kT: 0; --kP: 0;
+  --beat-ms: 160ms;
+  width: min(300px, 80vw);
+  filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.35));
+}
+.dancer svg { width: 100%; height: auto; overflow: visible; }
+.dancer rect, .dancer circle { fill: #cfe0e4; }
+.dancer .torso { fill: #9fb6bf; }
+.dancer .head rect { fill: #b9ced5; }
+.dancer .eye { fill: #0b1620; }
+.dancer .chest-light, .dancer .antenna-tip { fill: #ffb74d; transition: fill var(--beat-ms) ease; }
+.dancer .foot, .dancer .hand { fill: #7e969f; }
+.dancer .arm-l, .dancer .arm-r { transform-origin: 50% 8%; }
+.dancer .bot, .dancer .head { transform-origin: 50% 100%; }
+.dancer .hips { transform-origin: 50% 0%; }
+.dancer .leg-l, .dancer .leg-r { transform-origin: 50% 4%; }
+.dancer .arm, .dancer .hips, .dancer .leg, .dancer .head, .dancer .bot {
+  transform-box: fill-box;
+  transition: transform var(--beat-ms) cubic-bezier(0.22, 1.2, 0.4, 1);
+}
+.dancer.downbeat .chest-light, .dancer.downbeat .antenna-tip { fill: #4fc3f7; }
+.dancer.idle, .dancer.idle .bot, .dancer.idle .arm, .dancer.idle .hips, .dancer.idle .leg, .dancer.idle .head { transform: none !important; }
+.dancer.idle .chest-light, .dancer.idle .antenna-tip { fill: #4d626c; }
+/* FLUJO (choreo.js): todo continuo, sin transiciones. --sway (-1..1) es el vaivén de un lado al otro (extremo en
+   la nota ancla), --sway2 el mismo a mitad de velocidad, --bob (0..1) un rebote por tiempo (0 en el tiempo);
+   --wobg / --woba (0..1) las ondulaciones de las notas de textura graves y agudas; --amp la intensidad;
+   --raise la subida. --kL / --kR / --kT / --kP (0..1, con fundido) pesan cada paso: lateral, rebote,
+   transición y pico. */
+[data-style="flujo"] .bot, [data-style="flujo"] .hips, [data-style="flujo"] .head,
+[data-style="flujo"] .arm, [data-style="flujo"] .leg { transition: none; }
+[data-style="flujo"] .bot {
+  transform:
+    translateX(calc((var(--sway) * (16px * var(--kL) + 9px * var(--kR) + 14px * var(--kP)) + var(--sway2) * 10px * var(--kT)) * var(--amp)))
+    translateY(calc((var(--bob) * (-1.5px * var(--kL) - 6px * var(--kR) - 13px * var(--kP)) + var(--wobg) * 1.5px) * var(--amp)))
+    rotate(calc((var(--sway) * (3deg * var(--kL) + 1deg * var(--kR) + 3deg * var(--kP)) + var(--sway2) * 4deg * var(--kT)) * var(--amp)));
+}
+/* rebote: la cadera gira al revés del cuerpo (twist) */
+[data-style="flujo"] .hips {
+  transform: rotate(calc((var(--sway) * (6deg * var(--kL) - 9deg * var(--kR) + 5deg * var(--kP)) + var(--sway2) * 4deg * var(--kT)) * var(--amp) + var(--wobg) * 1deg));
+}
+[data-style="flujo"] .leg-l {
+  transform: rotate(calc(var(--sway) * -4deg * (var(--kL) + var(--kP)) + (1 - var(--bob)) * 5deg * (var(--kR) + var(--kP)) + var(--wobg) * 2deg * var(--amp)));
+}
+[data-style="flujo"] .leg-r {
+  transform: rotate(calc(var(--sway) * -4deg * (var(--kL) + var(--kP)) - (1 - var(--bob)) * 5deg * (var(--kR) + var(--kP)) - var(--wobg) * 2deg * var(--amp)));
+}
+/* la cabeza se lleva la reacción a las notas: cabecea con los graves y se inclina con los agudos */
+[data-style="flujo"] .head {
+  transform: translateY(calc(var(--wobg) * 6px * var(--amp) + var(--bob) * 2px * var(--kR)))
+             rotate(calc((var(--sway) * -5deg * (1 - var(--kT)) + var(--sway2) * -7deg * var(--kT)) * var(--amp)
+                         + var(--woba) * 12deg * var(--amp) - var(--wobg) * 4deg));
+}
+/* brazos: lateral los balancea, rebote los marca doblados en cada tiempo, transición flotan bajos, pico arriba */
+[data-style="flujo"] .arm-l {
+  transform: rotate(calc(30deg + 30deg * var(--kR) - 12deg * var(--kT) + 115deg * var(--kP) + var(--raise) * 120deg * (1 - var(--kP))
+    + (var(--sway) * (10deg * var(--kL) + 18deg * var(--kP)) + var(--sway2) * 8deg * var(--kT) + var(--bob) * 18deg * var(--kR)) * var(--amp)
+    + var(--woba) * 5deg * var(--amp)));
+}
+[data-style="flujo"] .arm-r {
+  transform: rotate(calc(-30deg - 30deg * var(--kR) + 12deg * var(--kT) - 115deg * var(--kP) - var(--raise) * 120deg * (1 - var(--kP))
+    + (var(--sway) * (10deg * var(--kL) + 18deg * var(--kP)) + var(--sway2) * 8deg * var(--kT) - var(--bob) * 18deg * var(--kR)) * var(--amp)
+    - var(--woba) * 5deg * var(--amp)));
+}
