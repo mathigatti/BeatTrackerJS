@@ -129,9 +129,9 @@ svg .row-lbl { fill: var(--muted); font-size: 11px; }
 [data-style="flujo"] .arm, [data-style="flujo"] .leg { transition: none; }
 [data-style="flujo"] .bot {
   transform:
-    translateX(calc((var(--sway) * (26px * var(--kL) + 9px * var(--kR) + 14px * var(--kP)) + var(--sway2) * 10px * var(--kT)) * var(--amp)))
-    translateY(calc((var(--bob) * (-3px * var(--kL) - 6px * var(--kR) - 13px * var(--kP)) + var(--wobg) * 1.5px) * var(--amp)))
-    rotate(calc((var(--sway) * (1deg * var(--kR) + 3deg * var(--kP)) + var(--sway2) * 4deg * var(--kT)) * var(--amp)))
+    translateX(calc((var(--sway) * (26px * var(--kL) + 9px * var(--kR) + 5px * var(--kP)) + var(--sway2) * 10px * var(--kT)) * var(--amp)))
+    translateY(calc((var(--bob) * (-3px * var(--kL) - 6px * var(--kR) - 26px * var(--kP)) + var(--wobg) * 1.5px) * var(--amp)))
+    rotate(calc((var(--sway) * (1deg * var(--kR)) + var(--sway2) * 4deg * var(--kT)) * var(--amp)))
     scale(calc(1 + var(--sway) * 0.05 * var(--kL)));
 }
 /* rebote: la cadera gira al revés del cuerpo (twist) */
@@ -139,10 +139,10 @@ svg .row-lbl { fill: var(--muted); font-size: 11px; }
   transform: rotate(calc((var(--sway) * (-9deg * var(--kR) + 5deg * var(--kP)) + var(--sway2) * 4deg * var(--kT)) * var(--amp) + var(--wobg) * 1deg));
 }
 [data-style="flujo"] .leg-l {
-  transform: rotate(calc(var(--sway) * -4deg * var(--kP) + (5deg + 11deg * var(--step)) * var(--kL) + (1 - var(--bob)) * 5deg * (var(--kR) + var(--kP)) + var(--wobg) * 2deg * var(--amp)));
+  transform: rotate(calc(var(--sway) * -4deg * var(--kP) + (5deg + 11deg * var(--step)) * var(--kL) + (1 - var(--bob)) * 5deg * var(--kR) + var(--bob) * 14deg * var(--kP) + var(--wobg) * 2deg * var(--amp)));
 }
 [data-style="flujo"] .leg-r {
-  transform: rotate(calc(var(--sway) * -4deg * var(--kP) + (5deg - 11deg * var(--step)) * var(--kL) - (1 - var(--bob)) * 5deg * (var(--kR) + var(--kP)) - var(--wobg) * 2deg * var(--amp)));
+  transform: rotate(calc(var(--sway) * -4deg * var(--kP) + (5deg - 11deg * var(--step)) * var(--kL) - (1 - var(--bob)) * 5deg * var(--kR) - var(--bob) * 14deg * var(--kP) - var(--wobg) * 2deg * var(--amp)));
 }
 /* la cabeza se lleva la reacción a las notas: cabecea con los graves y se inclina con los agudos */
 [data-style="flujo"] .head {
@@ -150,14 +150,14 @@ svg .row-lbl { fill: var(--muted); font-size: 11px; }
              rotate(calc((var(--sway) * -5deg * (1 - var(--kT)) + var(--sway2) * -7deg * var(--kT)) * var(--amp)
                          + var(--woba) * 12deg * var(--amp) - var(--wobg) * 4deg));
 }
-/* brazos: caminar los balancea con los pasos, rebote los marca doblados en cada tiempo, transición flotan bajos, pico arriba */
+/* brazos: caminar los balancea con los pasos, rebote los marca doblados en cada tiempo, transición flotan bajos, pico arriba y agitándose en cada salto */
 [data-style="flujo"] .arm-l {
-  transform: rotate(calc(30deg + 30deg * var(--kR) - 12deg * var(--kT) + 115deg * var(--kP) + var(--raise) * 120deg * (1 - var(--kP))
-    + (var(--step) * 11deg * var(--kL) + var(--sway) * 18deg * var(--kP)) + var(--sway2) * 8deg * var(--kT) + var(--bob) * 18deg * var(--kR)) * var(--amp)
+  transform: rotate(calc(30deg + 30deg * var(--kR) - 12deg * var(--kT) + 140deg * var(--kP) + var(--raise) * 120deg * (1 - var(--kP))
+    + (var(--step) * 11deg * var(--kL) + var(--bob) * 20deg * var(--kP) + var(--sway2) * 8deg * var(--kT) + var(--bob) * 18deg * var(--kR)) * var(--amp)
     + var(--woba) * 5deg * var(--amp)));
 }
 [data-style="flujo"] .arm-r {
-  transform: rotate(calc(-30deg - 30deg * var(--kR) + 12deg * var(--kT) - 115deg * var(--kP) - var(--raise) * 120deg * (1 - var(--kP))
-    + (var(--step) * 11deg * var(--kL) + var(--sway) * 18deg * var(--kP)) + var(--sway2) * 8deg * var(--kT) - var(--bob) * 18deg * var(--kR)) * var(--amp)
+  transform: rotate(calc(-30deg - 30deg * var(--kR) + 12deg * var(--kT) - 140deg * var(--kP) - var(--raise) * 120deg * (1 - var(--kP))
+    + (var(--step) * 11deg * var(--kL) - var(--bob) * 20deg * var(--kP) + var(--sway2) * 8deg * var(--kT) - var(--bob) * 18deg * var(--kR)) * var(--amp)
     - var(--woba) * 5deg * var(--amp)));
 }
