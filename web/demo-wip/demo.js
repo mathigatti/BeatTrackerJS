@@ -12,6 +12,7 @@ const here = (p) => new URL(p, import.meta.url).href;
 const dancer = $('#dancer');
 const roll = $('#roll');
 const LEAD_S = 0.06;
+const LISTEN_BARS = 2;  // en los clips escucha 2 compases antes de bailar, como en vivo (es lo que necesita para ver un patrón)
 const COL = { g: '#ffb23f', a: '#2dd9e5' };
 
 // círculo de carga arriba del robot, mientras carga o escucha y todavía no baila
@@ -224,7 +225,8 @@ function clipFrame() {
   if (!S.bars.length) return;
   const t = audio.currentTime, i = barAt(t + LEAD_S), b = S.bars[i];
   const span = b.end - b.start;
-  const playing = !audio.paused && t + LEAD_S >= S.bars[0].start;
+  const from = S.bars[Math.min(LISTEN_BARS, S.bars.length - 1)].start;
+  const playing = !audio.paused && t + LEAD_S >= from;
   if (playing) {
     choreo.update(S.plans[i], t, b.start, span);
     dancer.classList.remove('idle');
@@ -232,7 +234,7 @@ function clipFrame() {
   } else if (!audio.paused) dancer.classList.add('idle');
   if (i !== S.cur) {
     S.cur = i;
-    renderPattern(t + LEAD_S >= S.bars[0].start ? patternView(S.bars.slice(Math.max(0, i - 2), i), b.beats, S.plans[i]) : null);
+    renderPattern(t + LEAD_S >= from ? patternView(S.bars.slice(Math.max(0, i - 2), i), b.beats, S.plans[i]) : null);
   }
   setLoading(audio.paused ? null : audio.readyState < 3 ? 'cargando…' : !playing ? 'escuchando…' : null);
   const c = clipRows(), win = span * 2.2;
