@@ -17,7 +17,8 @@ const REPEAT_BARS = 4;
 const TEX_MIN_REPEAT = 3; // una nota de textura tiene que haber sonado en 3 de los últimos 4 compases
 const TEX_MAX = 4;        // y como mucho 4 por registro (las más repetidas)
 const POINTY_FROM = 6;    // notas de textura por compás desde las que el movimiento es puntiagudo
-const WAVY_FROM = 2;      // desde cuántas hay ondulación (menos: fluido y directo)
+const WAVY_FROM = 2;
+const PEAK_MIN_HISTORY = 8; // compases escuchados antes de poder decir que algo es un pico (en un clip corto, 16 no llega)      // desde cuántas hay ondulación (menos: fluido y directo)
 
 const stepsOf = (pos, n) => new Set(pos.map((p) => Math.round(p * n)).filter((s) => s < n));
 const inter = (a, b) => new Set([...a].filter((x) => b.has(x)));
@@ -57,7 +58,7 @@ export function planBar(history, beats, dist = []) {
   const graves = avg((b) => b.graves.length), total = avg((b) => b.graves.length + b.agudos.length);
   let kind = 'base';
   if (!recent.length || graves <= 1) kind = 'transicion';
-  else if (sorted.length >= 16 && total >= q(0.8) && total >= 1.25 * typical && graves >= 2) kind = 'pico';
+  else if (sorted.length >= PEAK_MIN_HISTORY && total >= q(0.8) && total >= 1.25 * typical && graves >= 2) kind = 'pico';
   return {
     n, anchor, by, texG, texA, shape, kind,
     amp: Math.min(1.4, Math.max(0.5, 0.5 + 0.5 * dens / typical)),
@@ -81,7 +82,7 @@ const PLL_MAX = 0.2;     // como mucho ±20% de velocidad: se ajusta, nunca fren
 const SMOOTH_S = 1.0;    // constante de tiempo para la intensidad y el fundido entre formas
 const KIND_SMOOTH_S = 1.5;
 const STEPS = ['caminar', 'rebote', 'transicion', 'pico'];
-export const STEP_TEXT = { caminar: 'caminar (atrás y adelante)', rebote: 'rebote', transicion: 'transición (pocos graves)', pico: 'pico de intensidad' };
+export const STEP_TEXT = { caminar: 'caminar (atrás y adelante)', rebote: 'rebote', transicion: 'transición (pocos graves)', pico: 'pico: salta con los brazos arriba' };
 
 /** Mueve el robot (variables CSS de estilo "flujo") según el plan y el tiempo. */
 export class Choreo {
@@ -117,7 +118,8 @@ export class Choreo {
     if (same(this.step, prop)) { this.cand = null; this.candN = 0; return; }
     if (same(this.cand, prop)) this.candN++; else { this.cand = prop; this.candN = 1; }
     const minBars = prop.kind !== this.step.kind ? KIND_MIN_BARS : STEP_MIN_BARS;
-    if (this.bars <= WARM_BARS || (this.candN >= STEP_CONFIRM && this.since >= minBars)) this.setStep(prop);
+    // al pico se entra enseguida (salta y levanta los brazos); para salir rige lo de siempre
+    if (this.bars <= WARM_BARS || prop.kind === 'pico' || (this.candN >= STEP_CONFIRM && this.since >= minBars)) this.setStep(prop);
   }
 
   setStep(prop) {

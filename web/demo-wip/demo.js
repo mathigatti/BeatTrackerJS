@@ -25,7 +25,8 @@ const choreo = new Choreo(dancer, (st) => {
   $('#r-guide').textContent = st.by;
 });
 
-const S = { source: null, clip: null, mode: 'rt', bars: [], plans: [], cur: -1 };
+const DEFAULT_CLIP = 'the-white-stripes_seven-nation-army';
+const S = { source: null, clip: null, mode: 'off', bars: [], plans: [], cur: -1 };
 const audio = new Audio();
 audio.preload = 'auto';
 
@@ -37,6 +38,7 @@ const inter = (a, b) => new Set([...a].filter((x) => b.has(x)));
 async function init() {
   const clips = await fetch(here('clips/index.json')).then((r) => r.json());
   const nav = $('#sources');
+  clips.sort((a, b) => (b.id === DEFAULT_CLIP) - (a.id === DEFAULT_CLIP));
   for (const c of clips) {
     const b = document.createElement('button');
     b.type = 'button';
@@ -52,7 +54,7 @@ async function init() {
   live.dataset.id = 'live';
   live.onclick = selectLive;
   nav.append(live);
-  selectClip(clips[0].id, false);
+  selectClip(DEFAULT_CLIP, false);
   loadModels().catch((e) => console.error(e));
 }
 
